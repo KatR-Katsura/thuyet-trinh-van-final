@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ánh sáng sau vấp ngã · Nhóm 2</title>
+<meta name="description" content="Ánh sáng sau vấp ngã: bài thuyết trình Nhóm 2, Ngữ văn 10, chủ đề Thất bại là điều đáng xấu hổ.">
+<!--
+  TƯ LIỆU VÀ BẢN QUYỀN
+  - Ảnh mở đầu và ảnh kết: Unsplash (Unsplash License), tải trực tiếp từ images.unsplash.com theo URL trong CONFIG.media.open / end.
+    Chưa xác minh tên người chụp của hai mã ảnh; hãy bổ sung vào CONFIG.media.credit nếu cần ghi công.
+  - Ảnh dự phòng Falcon 1 Flight 4: Wikimedia Commons, File:Falcon_1_Flight_4_launch.jpg (tư liệu SpaceX, miền công cộng/ghi nguồn theo trang tệp).
+  - Video minh họa: NASA Scientific Visualization Studio, "SpaceX IMAP Liftoff - Launch Angle 2" (footage Falcon 9, không phải Falcon 1).
+  - Font: Inter (SIL Open Font License) qua Google Fonts.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   01. DESIGN TOKENS: một font duy nhất (Inter), bảng màu theo từng chương
+   ===================================================================== */
+:root{
+  --f:'Inter','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --ease:cubic-bezier(.22,.8,.2,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+}
+/* Mỗi chương một bảng màu: ink = chữ chính, mute = chữ phụ, acc/acc2 = điểm nhấn */
+[data-theme=night]    {--ink:#F3F4F8;--mute:#AEB6CF;--acc:#EBD7A4;--acc2:#7FB0FF;--line:rgba(255,255,255,.2)}
+[data-theme=midnight] {--ink:#F3F6FC;--mute:#A9B7DA;--acc:#8FB8FF;--acc2:#EBD7A4;--line:rgba(255,255,255,.2)}
+[data-theme=violet]   {--ink:#F6F3FF;--mute:#BDB2E4;--acc:#BBA6FF;--acc2:#6FDCEE;--line:rgba(255,255,255,.2)}
+[data-theme=graphite] {--ink:#EFF1F4;--mute:#A8AEBB;--acc:#F2CB7E;--acc2:#9DB6E0;--line:rgba(255,255,255,.18)}
+[data-theme=paper]    {--ink:#121A33;--mute:#4A5470;--acc:#2450E6;--acc2:#B8862F;--line:rgba(18,26,51,.2)}
+[data-theme=navy]     {--ink:#F2F5FC;--mute:#A9B9DE;--acc:#86B5FF;--acc2:#EBD7A4;--line:rgba(255,255,255,.2)}
+[data-theme=cobalt]   {--ink:#FFFFFF;--mute:#D3E3FF;--acc:#84EAFA;--acc2:#FFE3A3;--line:rgba(255,255,255,.28)}
+[data-theme=teal]     {--ink:#EFFBFA;--mute:#A9D8D5;--acc:#62E4D4;--acc2:#F5D58A;--line:rgba(255,255,255,.2)}
+[data-theme=champagne]{--ink:#1D2236;--mute:#5A5F74;--acc:#B9701A;--acc2:#2450E6;--line:rgba(29,34,54,.2)}
+[data-theme=amber]    {--ink:#2A1B08;--mute:#6B4F23;--acc:#B4560E;--acc2:#1F4FE0;--line:rgba(42,27,8,.22)}
+[data-theme=dawn]     {--ink:#FFF8EA;--mute:#F3DDB4;--acc:#FFD98A;--acc2:#FFFFFF;--line:rgba(255,248,234,.3)}
+
+/* =====================================================================
+   02. GLOBAL STYLES
+   ===================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden;font-family:var(--f);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#viewport{position:fixed;inset:0;overflow:hidden;background:#000}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#05070f;user-select:none}
+#bg,#dust,#fx{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none}
+#noise{position:absolute;inset:0;z-index:1;opacity:.05;pointer-events:none}
+#words{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;transition:color 1.4s ease,opacity 1.2s ease}
+#slides{position:absolute;inset:0;z-index:10}
+#dust{z-index:20;opacity:0;transition:opacity 2s ease}
+#dust.on{opacity:1}
+#flash{position:absolute;inset:0;z-index:49;pointer-events:none;opacity:0;background:#fff}
+#fx{z-index:50}
+#blackout{position:fixed;inset:0;z-index:1000;background:#000;opacity:1;transition:opacity 2.6s var(--ease-io)}
+#blackout.gone{opacity:0;pointer-events:none}
+.slide{position:absolute;inset:0;visibility:hidden;color:var(--ink);overflow:hidden}
+.slide.active{visibility:visible}
+.slide:not(.active) *{animation-play-state:paused!important}
+svg{display:block}
+
+/* =====================================================================
+   03. TYPOGRAPHY: Inter 400/500 nội dung, 600 tiêu đề phụ, 700/800 tiêu đề lớn
+   ===================================================================== */
+.kick{font:600 22px/1 var(--f);letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.t-xl{font:800 134px/.98 var(--f);letter-spacing:-.04em}
+.t-1{font:800 100px/1.04 var(--f);letter-spacing:-.035em}
+.t-2{font:700 68px/1.1 var(--f);letter-spacing:-.025em}
+.t-3{font:700 44px/1.18 var(--f);letter-spacing:-.015em}
+.lead{font:500 36px/1.45 var(--f)}
+.body{font:400 29px/1.55 var(--f);color:var(--mute)}
+em{font-style:normal;color:var(--acc)}
+
+/* Tách từ: mặt nạ trượt từng từ (chừa chỗ cho dấu tiếng Việt) */
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding:.3em .06em .2em;margin:-.3em -.06em -.2em}
+.w>i{display:inline-block;font-style:inherit;font-weight:inherit;transform:translate3d(0,118%,0);transition:transform 1.05s var(--ease);transition-delay:calc(var(--i,0)*55ms + var(--d,0s))}
+.split.on .w>i{transform:none}
+.rv{opacity:0;transform:translate3d(0,32px,0);transition:opacity .9s var(--ease),transform 1.05s var(--ease);transition-delay:var(--d,0s)}
+.rv.l{transform:translate3d(-70px,0,0)}
+.rv.r{transform:translate3d(70px,0,0)}
+.rv.z{transform:scale(.9)}
+.rv.on{opacity:1;transform:none}
+.rv.on.out{opacity:0;transform:translate3d(0,-24px,0)}
+.fade{opacity:0;transition:opacity 2s var(--ease-io);transition-delay:var(--d,0s)}
+.fade.on{opacity:1}
+.fade.on.out{opacity:0}
+.abs{position:absolute}
+
+/* =====================================================================
+   04. ICON: một bộ SVG thống nhất (nét 2.6px, có mảng khối mờ, chuyển sắc)
+   ===================================================================== */
+.ico{width:1em;height:1em;overflow:visible}
+.s{fill:none;stroke:var(--st,currentColor);stroke-width:var(--sw,2.6px);stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.f{fill:var(--fl,currentColor);fill-opacity:.2;stroke:none}
+.d{fill:var(--st,currentColor);stroke:none}
+.g-gold{--st:url(#gGold);--fl:#F0CF86}
+.g-sky{--st:url(#gSky);--fl:#6FB4FF}
+.g-mint{--st:url(#gMint);--fl:#5EE4D2}
+.g-violet{--st:url(#gViolet);--fl:#9B7BFF}
+.g-ink{--st:currentColor;--fl:currentColor}
+.glow{filter:drop-shadow(0 0 12px var(--gl,rgba(255,220,140,.55)))}
+
+/* =====================================================================
+   05. SLIDE LAYOUTS: mỗi slide một bố cục riêng
+   ===================================================================== */
+
+/* ---- 01. Mở đầu ---- */
+.s1 .cam{position:absolute;inset:0;transform-origin:var(--cam-o,62% 42%)}
+.s1.active .cam{animation:camPush 40s ease-out forwards}
+@keyframes camPush{from{transform:scale(1)}to{transform:scale(1.08)}}
+.scene{position:absolute;inset:0;overflow:hidden;background:radial-gradient(ellipse at 62% 18%,#1a2757 0,#070b1c 52%,#02030a 100%)}
+.photo{position:absolute;left:-3%;top:-3%;width:106%;height:106%;object-fit:cover;object-position:var(--pos,50% 35%);opacity:0;transition:opacity 2.6s ease}
+.photo.ok{opacity:1}
+.s1 .g1{position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,4,12,.9) 0%,rgba(2,4,12,.62) 34%,rgba(2,4,12,.12) 66%,rgba(2,4,12,.3) 100%)}
+.s1 .g2{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,4,12,.5) 0%,rgba(2,4,12,0) 28%,rgba(2,4,12,.2) 62%,rgba(2,4,12,.82) 100%)}
+.s1 .cone{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,238,196,.55),rgba(255,238,196,0) 88%);clip-path:polygon(calc(var(--cx,64%) - 3%) 0,calc(var(--cx,64%) + 3%) 0,calc(var(--cx,64%) + 19%) 100%,calc(var(--cx,64%) - 19%) 100%);opacity:.42;transform-origin:var(--cx,64%) 0;animation:sway 12s ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
+.mist{position:absolute;width:1700px;height:640px;border-radius:50%;background:radial-gradient(closest-side,rgba(172,192,255,.17),rgba(172,192,255,0));animation:mistDrift 48s ease-in-out infinite alternate}
+.mist.m1{left:-300px;bottom:-160px}
+.mist.m2{right:-420px;bottom:60px;animation-duration:62s;animation-direction:alternate-reverse}
+@keyframes mistDrift{from{transform:translate3d(-120px,0,0)}to{transform:translate3d(160px,-26px,0)}}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 56% 46%,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 100%)}
+.open-text{position:absolute;left:120px;top:190px;width:900px}
+.s1.right .open-text{left:auto;right:120px;text-align:right}
+.s1.right .g1{transform:scaleX(-1)}
+.otitle{margin-top:34px;font:800 118px/1.14 var(--f);letter-spacing:-.04em;text-transform:uppercase}
+.otitle .split{display:block}
+.otitle .l2{color:var(--acc)}
+.osub{margin-top:46px;font:500 40px/1.3 var(--f);color:var(--mute)}
+.credit{position:absolute;right:36px;bottom:30px;font:400 17px/1 var(--f);color:rgba(255,255,255,.5);z-index:5}
+
+/* ---- 02. Thành viên ---- */
+.s2 .head{position:absolute;left:120px;top:100px}
+.s2 .head .t-3{margin-top:22px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;font-size:40px;line-height:1.25}
+.mem{position:absolute;text-align:left;font:800 92px/1 var(--f);letter-spacing:-.04em;white-space:nowrap;opacity:0;transition:opacity 1s var(--ease) var(--d,0s),transform 1.1s var(--ease) var(--d,0s),clip-path 1.25s var(--ease) var(--d,0s),filter 1.1s var(--ease) var(--d,0s),letter-spacing 1.3s var(--ease) var(--d,0s)}
+.mem.mem.on{opacity:1;transform:none;clip-path:inset(-30% -10% -30% -10%);filter:none}
+.mem.a{clip-path:inset(-30% 105% -30% -10%)}
+.mem.b{transform:translateY(70px)}
+.mem.c{filter:blur(22px);transform:scale(1.07)}
+.mem.d{letter-spacing:.3em}
+.mem.d.on{letter-spacing:-.04em}
+.mem.e{transform:scale(1.4);transform-origin:0 50%}
+.mem.f{transform:translateX(130px)}
+.mem.g{clip-path:inset(108% -10% -30% -10%)}
+.s2 svg.const{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.cdot{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .9s var(--ease) var(--d,0s)}
+.cdot.on{transform:scale(1)}
+.pulse{stroke-dasharray:60 940;animation:pulseRun 6.5s linear infinite}
+@keyframes pulseRun{from{stroke-dashoffset:60}to{stroke-dashoffset:-940}}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.4s var(--ease-io);transition-delay:var(--d,0s)}
+.draw.on{stroke-dashoffset:0}
+.s2 .tag{position:absolute;left:1110px;top:150px;font:500 30px/1.4 var(--f);color:var(--mute);max-width:560px}
+
+/* ---- 03. Câu hỏi ---- */
+.s3 .q{position:absolute;left:120px;top:236px;width:1230px}
+.s3 .q em{color:var(--acc)}
+.s3 .bigq{position:absolute;right:70px;top:30px;font:900 820px/1 var(--f);color:transparent;-webkit-text-stroke:3px var(--acc);opacity:.4;letter-spacing:-.04em}
+.s3 .ask{position:absolute;left:120px;top:770px;display:flex;align-items:center;gap:26px;font:700 46px/1 var(--f);color:var(--ink)}
+.s3 .ask .ico{font-size:58px;animation:bob 2.6s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(6px)}to{transform:translateY(-8px)}}
+.s3 .askline{position:absolute;left:120px;top:746px;width:640px;height:4px;overflow:visible}
+
+/* ---- 04. Quan niệm ---- */
+.s4 .qm{position:absolute;left:92px;top:40px;font:900 460px/1 var(--f);color:var(--acc);opacity:.22;letter-spacing:-.06em}
+.s4 .stm{position:absolute;left:120px;top:240px;width:1560px}
+.s4 .rule{position:absolute;left:120px;top:690px;width:1680px;height:4px}
+.s4 .qa{position:absolute;top:730px;font:700 72px/1.1 var(--f);letter-spacing:-.03em}
+.s4 .qa small{display:block;font:600 22px/1 var(--f);letter-spacing:.16em;color:var(--acc);margin-bottom:18px}
+.s4 .qa.q1{left:120px}.s4 .qa.q2{left:960px}
+.s4 .vl{position:absolute;left:900px;top:730px;width:4px;height:200px}
+
+/* ---- 05. Định nghĩa (nền sáng) ---- */
+.s5 .col{position:absolute;top:200px;width:720px}
+.s5 .col .t-1{font-size:92px;margin:20px 0 28px}
+.s5 .col .lead{color:var(--ink);font-weight:500}
+.s5 .c1{left:120px}.s5 .c2{left:1080px}
+.s5 .mid{position:absolute;left:0;top:170px;width:1920px;height:420px}
+.s5 .link{position:absolute;left:900px;top:292px;font-size:120px}
+.s5 .eg{position:absolute;left:120px;top:660px;width:1680px}
+.s5 .eg .kick{color:var(--mute);margin-bottom:34px}
+.s5 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:64px}
+.s5 .it{border-top:2px solid var(--ink);padding-top:22px;font:600 33px/1.35 var(--f)}
+.s5 .it span{display:block;font:700 20px/1 var(--f);letter-spacing:.18em;color:var(--acc);margin-bottom:16px}
+
+/* ---- 06. Gốc rễ ---- */
+.s6 .compass{position:absolute;right:140px;top:74px;font-size:168px;animation:spinSlow 90s linear infinite}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.s6 .num{position:absolute;top:260px;font:900 280px/1 var(--f);letter-spacing:-.06em;color:transparent;-webkit-text-stroke:3px var(--acc);opacity:.9}
+.s6 .n1{left:112px}.s6 .n2{left:1012px}
+.s6 .txt{position:absolute;top:590px;width:740px}
+.s6 .txt .t-2{font-size:54px;margin-bottom:20px}
+.s6 .t1{left:120px}.s6 .t2{left:1020px}
+.s6 svg.vl{position:absolute;left:958px;top:280px;width:4px;height:640px}
+
+/* ---- 07. Tác hại (bậc thang đi xuống) ---- */
+.s7 svg.st{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.s7 .blk{position:absolute;width:520px}
+.s7 .blk .kick{margin-bottom:14px;color:var(--mute)}
+.s7 .blk .t-3{margin-bottom:12px}
+.s7 .blk .body{font-size:27px}
+.s7 .b1{left:120px;top:436px}.s7 .b2{left:740px;top:596px}.s7 .b3{left:1320px;top:756px}
+.s7 .gd{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .8s var(--ease)}
+.s7 .gd.on{transform:scale(1)}
+
+/* ---- 08. Chuyển biến: XẤU HỔ -> HỌC HỎI ---- */
+.s8 .moment{position:absolute;left:120px;top:84px;width:1000px;height:260px}
+.s8 .word{position:absolute;left:0;top:0;font:800 196px/1.04 var(--f);letter-spacing:-.045em;white-space:nowrap}
+.s8 #shame span{display:inline-block;transition:transform .95s var(--ease),opacity .8s ease-in}
+.s8 #shame .sp{width:.3em}
+.s8 #shame.shake span{animation:tremble .09s linear infinite alternate}
+@keyframes tremble{from{transform:translate(-3px,2px) rotate(-.7deg)}to{transform:translate(3px,-2px) rotate(.7deg)}}
+.s8 #learn{color:var(--acc);text-shadow:0 0 60px rgba(132,234,250,.55);clip-path:circle(0% at 38% 60%);transition:clip-path 1.2s var(--ease-io)}
+.s8 #learn.show{clip-path:circle(150% at 38% 60%)}
+.s8 .sub{position:absolute;left:120px;top:362px;font:600 50px/1.2 var(--f);color:var(--mute);letter-spacing:-.02em}
+.s8 svg.st{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.s8 .blk{position:absolute;width:520px}
+.s8 .blk .kick{margin-bottom:14px}
+.s8 .blk .t-3{margin-bottom:12px}
+.s8 .blk .body{font-size:27px;color:var(--mute)}
+.s8 .b1{left:120px;bottom:130px}.s8 .b2{left:740px;bottom:290px}.s8 .b3{left:1320px;bottom:450px}
+.s8 .gd{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .8s var(--ease)}
+.s8 .gd.on{transform:scale(1)}
+
+/* ---- 09. Hai kiểu sai ---- */
+.half{position:absolute;top:0;bottom:0;width:960px;overflow:hidden}
+.half.l{left:0;background:linear-gradient(160deg,#052a34 0%,#06404a 55%,#0b6570 100%)}
+.half.r{right:0;background:linear-gradient(200deg,#241a44 0%,#15161f 60%,#0d0e14 100%)}
+.half .in{position:absolute;left:120px;right:90px;top:130px}
+.half.r .in{left:90px;right:120px}
+.half .ico{font-size:116px;margin-bottom:34px}
+.half .t-2{margin:20px 0 38px}
+.half ul{list-style:none}
+.half li{font:500 36px/1.3 var(--f);padding:20px 0;border-top:1px solid var(--line)}
+.half li:last-child{border-bottom:1px solid var(--line)}
+.s9 .dv{position:absolute;left:958px;top:0;width:4px;height:760px}
+.s9 .foot{position:absolute;left:310px;width:1300px;top:812px;text-align:center;font:700 46px/1.25 var(--f);letter-spacing:-.02em;color:#fff;text-shadow:0 2px 30px rgba(0,0,0,.6)}
+.s9 .footline{position:absolute;left:560px;top:786px;width:800px;height:4px}
+
+/* ---- 10. SpaceX / Falcon 1 ---- */
+.media{position:absolute;inset:0;background:#02040a;overflow:hidden}
+.media video,.media img.still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;opacity:0;transition:opacity 1.2s ease}
+.media video.ok,.media img.still.ok{opacity:1}
+.media img.still.ok:not(.under){animation:slowZoom 30s ease-out forwards}
+@keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.07)}}
+.media .fallback{position:absolute;inset:0;background:radial-gradient(ellipse at 70% 100%,#1c3b9c 0,#0a1233 46%,#03050e 100%)}
+.media .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,5,14,.9) 0%,rgba(3,5,14,.5) 34%,rgba(3,5,14,.42) 58%,rgba(3,5,14,.88) 100%)}
+.media .shade2{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,5,14,.7) 0%,rgba(3,5,14,0) 55%)}
+.s10 .vcap{position:absolute;right:36px;bottom:34px;z-index:6;max-width:760px;text-align:right;font:500 18px/1.4 var(--f);color:rgba(255,255,255,.62)}
+.s10 .devbadge{display:none;position:absolute;left:40px;top:40px;z-index:8;padding:14px 20px;border-radius:12px;background:#ffcf40;color:#201800;font:600 19px/1.3 var(--f);max-width:900px}
+body.dev .s10 .devbadge.has{display:block}
+.s10 .head{position:absolute;left:120px;top:96px;width:1400px;z-index:4}
+.s10 .head .t-1{margin-top:24px;font-size:92px}
+.s10 .tl{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:4}
+.nd{position:absolute;z-index:5;width:0;top:620px}
+.nd .date{position:absolute;left:-200px;width:400px;top:-104px;text-align:center;font:800 54px/1 var(--f);letter-spacing:-.03em}
+.nd .lab{position:absolute;left:-200px;width:400px;top:52px;text-align:center;font:600 20px/1 var(--f);letter-spacing:.16em;text-transform:uppercase;color:#C7CDE0}
+.nd.ok .date{color:var(--acc);font-size:64px;top:-128px}
+.nd.ok .lab{color:var(--acc);top:68px}
+.nd .dot{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;background:#0A1030;border:3px solid rgba(255,255,255,.9);display:grid;place-items:center;font-size:26px;color:#fff;--st:#fff}
+.nd.ok .dot{left:-40px;top:-40px;width:80px;height:80px;background:var(--acc);border-color:#fff;font-size:42px;color:#241800;--st:#241800;box-shadow:0 0 0 14px rgba(235,215,164,.2),0 0 60px rgba(235,215,164,.55)}
+.s10 .team{position:absolute;left:120px;top:800px;z-index:5;font:700 50px/1.2 var(--f);letter-spacing:-.02em}
+.s10 .cav{position:absolute;left:120px;top:884px;z-index:5;font:400 30px/1.45 var(--f);color:#CBD0E2;width:1400px}
+
+/* ---- 11. Hỏi lớp ---- */
+.s11 .q{position:absolute;left:120px;top:230px;width:1150px}
+.s11 .hint{position:absolute;left:120px;top:780px;font:500 40px/1.3 var(--f);color:var(--mute)}
+.s11 .bulb{position:absolute;right:210px;top:230px;font-size:420px;animation:floatY 9s ease-in-out infinite alternate}
+@keyframes floatY{from{transform:translateY(12px) rotate(-2deg)}to{transform:translateY(-16px) rotate(2deg)}}
+
+/* ---- 12. Tổng kết (nền sáng) ---- */
+.s12 .rows{position:absolute;left:120px;right:120px;top:292px}
+.s12 .row{display:grid;grid-template-columns:260px 1fr;align-items:center;height:170px;border-top:2px solid var(--ink)}
+.s12 .row:last-of-type{border-bottom:2px solid var(--ink)}
+.s12 .no{font:900 120px/1 var(--f);letter-spacing:-.06em;color:transparent;-webkit-text-stroke:2.5px var(--acc)}
+.s12 .tx{font:700 52px/1.2 var(--f);letter-spacing:-.025em}
+.s12 .slot{display:none;margin-top:26px;padding:20px 30px;border:2px dashed var(--acc);border-radius:16px;font:500 36px/1.3 var(--f);color:var(--acc);min-height:78px}
+body.editing .s12 .slot{display:block}
+
+/* ---- 13. Giải pháp (nền sáng ấm) ---- */
+.s13 svg.pth{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.s13 .sol{position:absolute;width:520px;text-align:center}
+.s13 .sol .t-3{margin-bottom:12px;font-size:44px}
+.s13 .sol .body{font-size:27px;color:var(--mute)}
+.s13 .s1b{left:70px;top:640px}.s13 .s2b{left:700px;top:530px}.s13 .s3b{left:1330px;top:420px}
+.s13 .med{position:absolute;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;display:grid;place-items:center;font-size:70px;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(255,255,255,.55));border:2px solid rgba(180,86,14,.45);box-shadow:0 18px 50px -14px rgba(180,86,14,.55),0 0 0 14px rgba(255,255,255,.28)}
+.s13 .med.m1{left:330px;top:560px}.s13 .med.m2{left:960px;top:450px}.s13 .med.m3{left:1590px;top:340px}
+
+/* ---- 14. Kết ---- */
+.s14 .cam{position:absolute;inset:0;transform-origin:var(--cam-o,60% 50%)}
+.s14.active .cam{animation:camPush2 40s ease-out forwards}
+@keyframes camPush2{from{transform:scale(1.02)}to{transform:scale(1.1)}}
+.s14 .scene{background:radial-gradient(ellipse at 70% 30%,#6a4a2a 0,#241632 55%,#0a0716 100%)}
+.s14 .dark{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,5,16,.82),rgba(3,5,16,.7));opacity:1;transition:opacity 3.4s var(--ease-io)}
+.s14 .dark.on{opacity:0}
+.s14 .warm{position:absolute;inset:0;background:radial-gradient(ellipse at 72% 38%,rgba(255,226,160,.72) 0,rgba(255,190,100,.34) 34%,rgba(255,170,80,0) 70%);opacity:0;transform:scale(.8);transform-origin:72% 38%;transition:opacity 3.4s var(--ease-io),transform 4s var(--ease)}
+.s14 .warm.on{opacity:1;transform:none}
+.s14 .ray{position:absolute;top:-10%;width:340px;height:130%;background:linear-gradient(180deg,rgba(255,236,190,.34),rgba(255,236,190,0) 80%);transform-origin:50% 0;opacity:0;transition:opacity 3.6s var(--ease-io)}
+.s14 .ray.on{opacity:1}
+.s14 .ray.r1{left:56%;transform:rotate(14deg)}
+.s14 .ray.r2{left:66%;width:220px;transform:rotate(26deg)}
+.s14 .ray.r3{left:46%;width:200px;transform:rotate(4deg)}
+.s14 .fog{position:absolute;left:-10%;width:130%;height:420px;bottom:-90px;background:radial-gradient(closest-side,rgba(255,236,200,.24),rgba(255,236,200,0));animation:mistDrift 52s ease-in-out infinite alternate}
+.s14 .sideg{position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,8,24,.84) 0%,rgba(14,8,24,.58) 34%,rgba(14,8,24,.08) 62%,rgba(14,8,24,0) 100%)}
+.s14.right .sideg{transform:scaleX(-1)}
+.s14 .vig2{position:absolute;inset:0;background:radial-gradient(ellipse at 56% 46%,rgba(0,0,0,0) 46%,rgba(0,0,0,.58) 100%)}
+.s14 .end-text{position:absolute;left:120px;top:170px;width:980px}
+.s14.right .end-text{left:auto;right:120px;text-align:right}
+.s14 .e-q{position:absolute;left:0;top:150px;width:100%;font:500 44px/1.4 var(--f);color:var(--mute);letter-spacing:-.01em}
+.s14 .e-m{position:absolute;left:0;top:0;width:100%}
+.s14 .e-m .t-xl{font-size:104px}
+.s14 .e-m .t-2{margin-top:28px;font-weight:600;font-size:48px;color:var(--acc)}
+.s14 .spark{position:absolute;left:0;top:-34px;width:520px;height:8px;overflow:visible}
+.s14 .e-t{position:absolute;left:0;top:640px;width:100%;font:600 26px/1.5 var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.s14 .end-text,.s14 .cam,.s14 .sideg,.s14 .vig2{transition:opacity 3s ease-in}
+.s14.sinking .end-text,.s14.sinking .cam,.s14.sinking .sideg{opacity:0}
+#endfade{position:absolute;inset:0;z-index:55;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s ease}
+#endfade.on{opacity:1;transition:opacity 3.2s var(--ease-io) .9s}
+.glowl{filter:drop-shadow(0 0 7px rgba(120,170,255,.55))}
+.glowl.warm{filter:drop-shadow(0 0 8px rgba(255,205,120,.6))}
+
+/* =====================================================================
+   06. NỀN PHỤ: chữ ngẫu nhiên, quỹ đạo, HUD, hướng dẫn
+   ===================================================================== */
+.wd{position:absolute;white-space:nowrap;font:800 120px/1 var(--f);letter-spacing:-.03em;opacity:0;will-change:transform,opacity}
+.wd.out{color:transparent;-webkit-text-stroke:1.5px currentColor}
+#trail{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:11;pointer-events:none;transition:opacity 1.2s ease,color 1.2s ease}
+#trail.hide{opacity:0}
+#trail .base{fill:none;stroke:currentColor;stroke-width:2;opacity:.2}
+#trail .prog{fill:none;stroke:url(#gTrail);stroke-width:4;stroke-linecap:round}
+#trail .tick{fill:currentColor;opacity:.38}
+#trail .orb{fill:#fff}
+#trail .halo{fill:currentColor;opacity:.3}
+#hud{position:absolute;right:60px;top:34px;z-index:12;font:600 22px/1 var(--f);letter-spacing:.18em;color:var(--ink);opacity:.55;transition:opacity 1s ease,color 1s ease}
+#hud.hide{opacity:0}
+#hint{position:absolute;left:0;right:0;bottom:50px;z-index:13;text-align:center;font:500 22px/1.4 var(--f);color:#fff;opacity:0;transition:opacity 1s ease;pointer-events:none;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+#hint.on{opacity:.8}
+#help,#overview{position:absolute;inset:0;z-index:60;display:none;background:rgba(4,6,16,.95);color:#fff;padding:96px 140px}
+#help.on,#overview.on{display:block}
+#help h2,#overview h2{font:800 56px/1.1 var(--f);letter-spacing:-.03em;margin-bottom:40px}
+#help dl{display:grid;grid-template-columns:260px 1fr;gap:14px 28px;font:400 29px/1.4 var(--f)}
+#help dt{font-weight:700;color:#EBD7A4}
+#help .lowfx-status{font-weight:700;color:#EBD7A4}
+#overview .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+#overview button{all:unset;cursor:pointer;padding:22px 26px;border-radius:14px;border:1px solid rgba(255,255,255,.25);font:500 26px/1.3 var(--f);color:#fff}
+#overview button:hover,#overview button.cur{background:rgba(235,215,164,.18);border-color:#EBD7A4}
+#overview button b{display:block;color:#EBD7A4;font-size:20px;letter-spacing:.18em;margin-bottom:8px}
+#notebar{position:fixed;left:0;right:0;bottom:0;max-height:34vh;overflow:auto;padding:16px 28px;background:rgba(8,10,22,.94);color:#eef0f7;font:400 18px/1.55 'Inter',system-ui,sans-serif;display:none;z-index:900}
+#notebar.on{display:block}
+#notebar b{color:#EBD7A4}
+
+/* =====================================================================
+   07. RESPONSIVE, GIẢM HIỆU ỨNG
+   ===================================================================== */
+body.lowfx .s1 .mist,body.lowfx .s14 .fog{display:none}
+body.lowfx #noise{display:none}
+</style>
+</head>
+<body>
+<!-- Biểu tượng và dải màu dùng chung (SVG sprite). Nét chuyển sắc theo toạ độ người dùng nên mọi icon cùng một hệ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gGold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#FFE9B0"/><stop offset="1" stop-color="#E0A64A"/></linearGradient>
+    <linearGradient id="gSky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#9FD0FF"/><stop offset="1" stop-color="#4C7BFF"/></linearGradient>
+    <linearGradient id="gMint" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#B4F5EC"/><stop offset="1" stop-color="#2BC7B4"/></linearGradient>
+    <linearGradient id="gViolet" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#D3C4FF"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient>
+    <linearGradient id="gH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1920" y2="0"><stop offset="0" stop-color="#6FB4FF"/><stop offset=".5" stop-color="#BBA6FF"/><stop offset="1" stop-color="#F2D58E"/></linearGradient>
+    <linearGradient id="gHd" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1920" y2="0"><stop offset="0" stop-color="#2450E6"/><stop offset=".55" stop-color="#7A4FE0"/><stop offset="1" stop-color="#C9861F"/></linearGradient>
+    <linearGradient id="gV" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1080"><stop offset="0" stop-color="#9FD0FF" stop-opacity="0"/><stop offset=".5" stop-color="#C8D6FF"/><stop offset="1" stop-color="#F2D58E" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gTrail" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="1860" y2="0"><stop offset="0" stop-color="#6FB4FF"/><stop offset=".6" stop-color="#BBA6FF"/><stop offset="1" stop-color="#F2D58E"/></linearGradient>
+    <radialGradient id="gHalo"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0"/></filter>
+
+    <!-- Bộ icon: viewBox 48, nét 2.6px, một mảng khối mờ phía sau cho chiều sâu -->
+    <symbol id="i-raise" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="20"/><circle class="s" cx="24" cy="24" r="20"/><path class="s" d="M24 34V14M15 22.5l9-9 9 9"/></symbol>
+    <symbol id="i-link" viewBox="0 0 48 48"><path class="f" d="M20 12h-4a10 10 0 0 0 0 20h4zM28 36h4a10 10 0 0 0 0-20h-4z"/><path class="s" d="M21 14h-5a9 9 0 0 0 0 18h5M27 34h5a9 9 0 0 0 0-18h-5M17 24h14"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="20"/><circle class="s" cx="24" cy="24" r="20"/><path class="f" d="M32 16l-5.5 10.5L16 32l5.5-10.5z"/><path class="s" d="M32 16l-5.5 10.5L16 32l5.5-10.5z"/><circle class="d" cx="24" cy="24" r="2"/><path class="s" d="M24 4v4M24 40v4M4 24h4M40 24h4"/></symbol>
+    <symbol id="i-target" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="18"/><circle class="s" cx="24" cy="24" r="18"/><circle class="s" cx="24" cy="24" r="10"/><circle class="d" cx="24" cy="24" r="3.4"/><path class="s" d="M33 15l9-9M37 6h5v5"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><path class="f" d="M24 6L44 40H4z"/><path class="s" d="M24 6L44 40H4z"/><path class="s" d="M24 18v11"/><circle class="d" cx="24" cy="34.5" r="2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 48 48"><path class="s" d="M15 15l18 18M33 15L15 33"/></symbol>
+    <symbol id="i-check" viewBox="0 0 48 48"><path class="s" d="M12 25l8 8 16-18"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><path class="f" d="M24 5a13 13 0 0 0-7 24v5h14v-5a13 13 0 0 0-7-24z"/><path class="s" d="M24 5a13 13 0 0 0-7 24v5h14v-5a13 13 0 0 0-7-24z"/><path class="s" d="M18 40h12M20.5 44h7M19 26l5-5 5 5M24 21v13"/></symbol>
+    <symbol id="i-lens" viewBox="0 0 48 48"><path class="f" d="M3 24s8-13 21-13 21 13 21 13-8 13-21 13S3 24 3 24z"/><path class="s" d="M3 24s8-13 21-13 21 13 21 13-8 13-21 13S3 24 3 24z"/><circle class="s" cx="24" cy="24" r="6.5"/><circle class="d" cx="24" cy="24" r="2.4"/></symbol>
+    <symbol id="i-step" viewBox="0 0 48 48"><path class="f" d="M6 40h10V30h10V20h10V10h6v30z"/><path class="s" d="M6 40h10V30h10V20h10V10h6"/><path class="s" d="M30 8l8-2-2 8"/></symbol>
+    <symbol id="i-loop" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="14"/><path class="s" d="M38 24a14 14 0 1 1-4.2-10M38 7v8h-8"/></symbol>
+  </defs>
+</svg>
+
+<div id="viewport">
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <svg id="noise" width="1920" height="1080" aria-hidden="true"><rect width="1920" height="1080" filter="url(#grain)"/></svg>
+  <div id="words" aria-hidden="true"></div>
+  <svg id="trail" viewBox="0 0 1920 1080" aria-hidden="true"><path id="trailBase" class="base" d="M60 1030 C 330 1002 520 1056 800 1030 S 1340 998 1560 1030 S 1780 1050 1860 1030"/><path id="trailProg" class="prog" d="M60 1030 C 330 1002 520 1056 800 1030 S 1340 998 1560 1030 S 1780 1050 1860 1030" pathLength="1000" stroke-dasharray="0 1000"/><g id="trailTicks"></g><circle id="trailHalo" class="halo" r="16" cx="60" cy="1030"/><circle id="trailOrb" class="orb" r="5" cx="60" cy="1030"/></svg>
+  <div id="hud" aria-hidden="true"></div>
+
+  <div id="slides">
+
+<!-- ================= 01. MỞ ĐẦU ================= -->
+<section class="slide s1" data-title="Mở đầu" data-theme="night" data-trans="light" data-intensity="0" data-dust="1" data-trail="0" data-words="BÓNG TỐI,E NGẠI,DO DỰ,IM LẶNG,THẤT BẠI">
+  <div class="cam">
+    <div class="scene">
+      <img class="photo" id="imgOpen" alt="" decoding="async">
+      <div class="g1"></div><div class="g2"></div><div class="cone"></div>
+      <div class="mist m1"></div><div class="mist m2"></div><div class="vig"></div>
+    </div>
+  </div>
+  <div class="open-text">
+    <div class="kick rv" style="--d:.5s">Nhóm 2 · Ngữ văn 10</div>
+    <h1 class="otitle"><span class="split" style="--d:.7s">ÁNH SÁNG</span><span class="split l2" style="--d:1s">SAU VẤP NGÃ</span></h1>
+    <div class="osub rv" style="--d:1.9s">Thất bại là điều đáng xấu hổ?</div>
+  </div>
+  <div class="credit" id="creditOpen"></div>
+</section>
+
+<!-- ================= 02. THÀNH VIÊN ================= -->
+<section class="slide s2" data-title="Những thành viên của nhóm 2" data-theme="midnight" data-trans="fade" data-trail="0" data-words="NHÓM 2,CÙNG NHAU,ĐỒNG HÀNH,HỢP TÁC">
+  <div class="head">
+    <div class="kick rv">Nhóm 2 · Ngữ văn 10</div>
+    <div class="t-3 split" style="--d:.15s">NHỮNG THÀNH VIÊN<br>CỦA NHÓM 2</div>
+  </div>
+  <div class="tag rv" style="--d:.5s">Cùng đồng hành trong bài thuyết trình hôm nay.</div>
+  <svg class="const" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s" d="M980 406L1140 496L980 586L1140 676L980 766L1140 856L980 946" stroke="rgba(143,184,255,.16)" style="stroke-width:2px"/>
+    <path class="s draw glowl" data-seq="2" pathLength="1" d="M980 406L1140 496" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="3" pathLength="1" d="M1140 496L980 586" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="4" pathLength="1" d="M980 586L1140 676" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="5" pathLength="1" d="M1140 676L980 766" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="6" pathLength="1" d="M980 766L1140 856" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="7" pathLength="1" d="M1140 856L980 946" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path id="memPulse" class="s pulse glowl warm" pathLength="1000" d="M980 406L1140 496L980 586L1140 676L980 766L1140 856L980 946" stroke="#FFE3A3" style="stroke-width:4px;opacity:0;transition:opacity 1s"/>
+    <g fill="#EBD7A4">
+      <circle class="cdot glowl warm" data-seq="1" cx="980" cy="406" r="11"/><circle class="cdot glowl warm" data-seq="2" cx="1140" cy="496" r="11"/>
+      <circle class="cdot glowl warm" data-seq="3" cx="980" cy="586" r="11"/><circle class="cdot glowl warm" data-seq="4" cx="1140" cy="676" r="11"/>
+      <circle class="cdot glowl warm" data-seq="5" cx="980" cy="766" r="11"/><circle class="cdot glowl warm" data-seq="6" cx="1140" cy="856" r="11"/>
+      <circle class="cdot glowl warm" data-seq="7" cx="980" cy="946" r="11"/>
+    </g>
+  </svg>
+  <div class="mem c" data-seq="1" style="right:1000px;top:360px;text-align:right;transform-origin:100% 50%">Huy Tín</div>
+  <div class="mem a" data-seq="2" style="left:1190px;top:450px">Bảo Trân</div>
+  <div class="mem f" data-seq="3" style="right:1000px;top:540px;text-align:right">Thanh Trúc</div>
+  <div class="mem d" data-seq="4" style="left:1190px;top:630px">Minh Trường</div>
+  <div class="mem g" data-seq="5" style="right:1000px;top:720px;text-align:right">Minh Trí</div>
+  <div class="mem e" data-seq="6" style="left:1190px;top:810px">Ngọc Trâm</div>
+  <div class="mem b" data-seq="7" style="right:1000px;top:900px;text-align:right">Minh Tiến</div>
+</section>
+
+<!-- ================= 03. CÂU HỎI MỞ ĐẦU ================= -->
+<section class="slide s3" data-title="Câu hỏi mở đầu" data-theme="graphite" data-trans="push" data-words="SỢ SAI,DO DỰ,E NGẠI,CHÙN BƯỚC">
+  <div class="bigq rv z" aria-hidden="true">?</div>
+  <div class="kick rv abs" style="left:120px;top:150px">Câu hỏi mở đầu</div>
+  <div class="q t-1 split">Bạn đã bao giờ vì sợ sai mà <em>không dám thử</em> sức?</div>
+  <svg class="askline" viewBox="0 0 640 4" aria-hidden="true"><path class="s draw glowl" data-step="1" pathLength="1" d="M0 2H640" stroke="url(#gH)" style="stroke-width:4px"/></svg>
+  <div class="ask rv" data-step="1"><svg class="ico g-gold glow"><use href="#i-raise"/></svg><span>Nếu có, hãy giơ tay</span></div>
+</section>
+
+<!-- ================= 04. QUAN NIỆM ================= -->
+<section class="slide s4" data-title="Quan niệm cần xem lại" data-theme="violet" data-trans="zoom" data-words="XẤU HỔ,ĐỊNH KIẾN,ĐÚNG HAY SAI,QUAN NIỆM">
+  <div class="qm rv z" aria-hidden="true">“</div>
+  <div class="kick rv abs" style="left:120px;top:150px">Quan niệm cần xem lại</div>
+  <div class="stm t-xl split">Thất bại là điều<br><em>đáng xấu hổ</em>”</div>
+  <svg class="rule" viewBox="0 0 1680 4" aria-hidden="true"><path class="s draw glowl" data-step="1" pathLength="1" d="M0 2H1680" stroke="url(#gH)" style="stroke-width:4px"/></svg>
+  <div class="qa q1 rv" data-step="1"><small>CÂU HỎI 1</small>Đúng hay sai?</div>
+  <svg class="vl" viewBox="0 0 4 200" aria-hidden="true"><path class="s draw" data-step="2" pathLength="1" d="M2 0V200" stroke="url(#gV)" style="stroke-width:4px"/></svg>
+  <div class="qa q2 rv" data-step="2" style="width:840px"><small>CÂU HỎI 2</small>Có nên bỏ nó đi không?</div>
+</section>
+
+<!-- ================= 05. KHÁI NIỆM (nền sáng) ================= -->
+<section class="slide s5" data-title="Thất bại và xấu hổ" data-theme="paper" data-trans="wipe" data-words="THẤT BẠI,XẤU HỔ,KHÁI NIỆM">
+  <div class="kick rv abs" style="left:120px;top:110px">Hai khái niệm</div>
+  <div class="col c1"><div class="kick rv" style="color:var(--mute);margin-top:80px">Khái niệm 1</div><div class="t-1 split">Thất bại</div><p class="lead rv" style="--d:.3s">Khi ta không đạt được mục tiêu hay kỳ vọng.</p></div>
+  <svg class="ico g-ink link rv" data-step="1" style="color:#2450E6"><use href="#i-link"/></svg>
+  <div class="col c2 rv" data-step="1"><div class="kick" style="color:var(--mute);margin-top:80px">Khái niệm 2</div><div class="t-1" style="margin:20px 0 28px;color:var(--acc)">Xấu hổ</div><p class="lead">Cảm giác tiêu cực khi mắc sai lầm hoặc không đạt điều mình mong muốn.</p></div>
+  <div class="eg rv" data-step="2">
+    <div class="kick">Trong học tập, điều đó hiện ra như thế này</div>
+    <div class="row3">
+      <div class="it"><span>01</span>Không dám tham gia thi học sinh giỏi</div>
+      <div class="it"><span>02</span>Biết đáp án vẫn không dám phát biểu</div>
+      <div class="it"><span>03</span>Ngại nêu ý kiến riêng vì sợ sai, sợ bị đánh giá</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06. GỐC RỄ ================= -->
+<section class="slide s6" data-title="Gốc rễ của quan niệm" data-theme="navy" data-trans="push" data-words="NỖI SỢ,CAN ĐẢM,GỐC RỄ,VÙNG AN TOÀN">
+  <div class="kick rv abs" style="left:120px;top:90px">Hai nguyên nhân</div>
+  <div class="t-2 split abs" style="left:120px;top:128px;width:1300px">Gốc rễ của <em>quan niệm</em> này</div>
+  <svg class="ico g-sky glow compass rv z" aria-hidden="true"><use href="#i-compass"/></svg>
+  <svg class="vl rv" viewBox="0 0 4 640" aria-hidden="true"><path class="s draw" data-step="1" pathLength="1" d="M2 0V640" stroke="url(#gV)" style="stroke-width:4px"/></svg>
+  <div class="num n1 rv l" data-step="1">01</div>
+  <div class="txt t1 rv" data-step="1"><div class="t-2">Nỗi sợ thất bại</div><p class="body">Ta nghĩ mình không đủ năng lực, không đủ giỏi, không đủ cố gắng, nên không dám thử sức, nhất là với những điều nằm ngoài vùng an toàn.</p></div>
+  <div class="num n2 rv r" data-step="2">02</div>
+  <div class="txt t2 rv" data-step="2"><div class="t-2">Thiếu can đảm và lười biếng</div><p class="body">Năng lực thì đủ, nhưng ta trì hoãn: biết mình cần cố gắng, biết mình phải thay đổi mà vẫn chọn cách dễ dàng và an toàn hơn.</p></div>
+</section>
+
+<!-- ================= 07. TÁC HẠI ================= -->
+<section class="slide s7" data-title="Tác hại của quan niệm" data-theme="graphite" data-trans="wipe" data-words="MẤT NIỀM TIN,BỎ LỠ,NGẠI NGẦN,CHÙN BƯỚC">
+  <div class="kick rv abs" style="left:120px;top:90px">Tác hại</div>
+  <div class="t-1 split abs" style="left:120px;top:128px;width:1500px">Điều ta <em>đánh mất</em></div>
+  <svg class="st" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M100 420H660" stroke="url(#gH)" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M660 420V580H1280" stroke="url(#gH)" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="3" pathLength="1" d="M1280 580V740H1840" stroke="url(#gH)" style="stroke-width:4px"/>
+    <circle class="gd glowl warm" data-step="1" cx="660" cy="420" r="10" fill="#EBD7A4"/><circle class="gd glowl warm" data-step="2" cx="1280" cy="580" r="10" fill="#EBD7A4"/><circle class="gd glowl warm" data-step="3" cx="1840" cy="740" r="10" fill="#EBD7A4"/>
+  </svg>
+  <div class="blk b1 rv" data-step="1"><div class="kick">Bậc 1</div><div class="t-3">Niềm tin vào bản thân</div><p class="body">Ta luôn nhìn năng lực của mình một cách tiêu cực và không dám khẳng định giá trị của chính mình.</p></div>
+  <div class="blk b2 rv" data-step="2"><div class="kick">Bậc 2</div><div class="t-3">Cơ hội học hỏi</div><p class="body">Ta bỏ lỡ cơ hội trải nghiệm và phát triển, phụ thuộc vào đánh giá của người khác, không dám theo đuổi mục tiêu lớn hơn.</p></div>
+  <div class="blk b3 rv" data-step="3"><div class="kick">Bậc 3</div><div class="t-3">Sự tiến bộ</div><p class="body">Ta chỉ chọn việc chắc chắn thành công, thiếu trải nghiệm, không học được từ sai lầm và ngày càng khó tiến bộ.</p></div>
+</section>
+
+<!-- ================= 08. CHUYỂN BIẾN: XẤU HỔ -> HỌC HỎI ================= -->
+<section class="slide s8" data-title="Từ xấu hổ đến học hỏi" data-theme="cobalt" data-trans="iris" data-words="HỌC HỎI,BẢN LĨNH,TRƯỞNG THÀNH,NỖ LỰC,CAN ĐẢM">
+  <div class="moment"><div class="word" id="shame" aria-label="Xấu hổ"></div><div class="word" id="learn">HỌC HỎI</div></div>
+  <div class="sub rv" style="--d:.6s">Khi không còn sợ thất bại</div>
+  <svg class="st" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M100 704H660" stroke="#fff" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M660 704V544H1280" stroke="#fff" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="3" pathLength="1" d="M1280 544V384H1840" stroke="#fff" style="stroke-width:4px"/>
+    <circle class="gd glowl warm" data-step="1" cx="660" cy="704" r="10" fill="#FFE3A3"/><circle class="gd glowl warm" data-step="2" cx="1280" cy="544" r="10" fill="#FFE3A3"/><circle class="gd glowl warm" data-step="3" cx="1840" cy="384" r="10" fill="#FFE3A3"/>
+  </svg>
+  <div class="blk b1 rv" data-step="1"><div class="kick">Bước 1</div><div class="t-3">Bước ra khỏi vùng an toàn</div><p class="body">Ta mạnh dạn thử sức với điều mới và nắm bắt cơ hội.</p></div>
+  <div class="blk b2 rv" data-step="2"><div class="kick">Bước 2</div><div class="t-3">Nhận phản hồi thực tế</div><p class="body">Thất bại chỉ ra lỗ hổng để ta rút kinh nghiệm và điều chỉnh phương pháp hiệu quả hơn.</p></div>
+  <div class="blk b3 rv" data-step="3"><div class="kick">Bước 3</div><div class="t-3">Rèn bản lĩnh vượt khó</div><p class="body">Ta giữ được bình tĩnh trước nghịch cảnh, coi thất bại là bài học để chủ động sửa sai thay vì chùn bước.</p></div>
+</section>
+
+<!-- ================= 09. HAI KIỂU SAI ================= -->
+<section class="slide s9" data-title="Hai kiểu sai" data-theme="teal" data-trans="wipe" data-intensity="0" data-trail="0" data-words="">
+  <div class="half l"><div class="in">
+    <svg class="ico g-mint glow rv" style="--d:.3s"><use href="#i-target"/></svg>
+    <div class="kick rv" style="--d:.4s">Kiểu thứ nhất</div>
+    <div class="t-2 split" style="--d:.5s">Thất bại khi cố gắng</div>
+    <ul class="rv" style="--d:.8s"><li>Trong quá trình cố gắng</li><li>Trong học hỏi</li><li>Trong thử nghiệm</li></ul>
+  </div></div>
+  <div class="half r"><div class="in rv r" data-step="1">
+    <svg class="ico g-gold glow"><use href="#i-warn"/></svg>
+    <div class="kick" style="color:#F2CB7E">Kiểu thứ hai</div>
+    <div class="t-2">Sai lầm do thiếu trách nhiệm</div>
+    <ul><li>Không chịu nhận lỗi</li><li>Không chịu sửa chữa</li></ul>
+  </div></div>
+  <svg class="dv" viewBox="0 0 4 1080" preserveAspectRatio="none" aria-hidden="true"><path class="s draw glowl" pathLength="1" d="M2 0V1080" stroke="url(#gV)" style="stroke-width:4px;--d:.2s"/></svg>
+  <div class="foot rv" data-step="2">Sai có thể gây hậu quả nên cần nghiêm túc.</div>
+</section>
+
+<!-- ================= 10. SPACEX / FALCON 1 ================= -->
+<section class="slide s10" data-title="Dẫn chứng: Falcon 1" data-theme="navy" data-trans="zoom" data-intensity="0" data-trail="0" data-words="">
+  <div class="media">
+    <div class="fallback"></div>
+    <img class="still" id="still" alt="Falcon 1 Flight 4 (tư liệu dự phòng)" decoding="async">
+    <video id="vid" muted playsinline preload="none" disablepictureinpicture></video>
+    <div class="shade"></div><div class="shade2"></div>
+  </div>
+  <div class="devbadge" id="mediaBadge"></div>
+  <div class="head"><div class="kick rv">Dẫn chứng · Falcon 1</div><div class="t-1 split" style="--d:.2s">Ba lần thất bại.<br>Lần thứ tư <em>thành công</em>.</div></div>
+  <svg class="tl" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s" d="M360 620H1620" stroke="rgba(255,255,255,.22)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M360 620H780" stroke="#9FB4E6" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M780 620H1200" stroke="#9FB4E6" style="stroke-width:4px"/>
+    <path class="s draw glowl warm" data-step="3" pathLength="1" d="M1200 620H1620" stroke="url(#gH)" style="stroke-width:5px"/>
+  </svg>
+  <div class="nd rv z" data-step="1" style="left:360px"><div class="date">3/2006</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd rv z" data-step="2" style="left:780px"><div class="date">3/2007</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd rv z" data-step="3" style="left:1200px"><div class="date">8/2008</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd ok rv z" data-step="4" id="nodeOk" style="left:1620px"><div class="date">28/9/2008</div><div class="dot"><svg class="ico s"><use href="#i-check"/></svg></div><div class="lab">Thành công</div></div>
+  <div class="team rv" data-step="5">Thành quả của <em>cả đội ngũ</em> SpaceX.</div>
+  <div class="cav rv" data-step="6">Thất bại không tự dẫn đến thành công. Điều đáng học là sự nhìn lại, sửa và thử tiếp.</div>
+  <div class="vcap">Hình ảnh phóng minh họa: tên lửa Falcon 9 (NASA SVS, SpaceX IMAP). Không phải Falcon 1.</div>
+</section>
+
+<!-- ================= 11. HỎI LỚP ================= -->
+<section class="slide s11" data-title="Hỏi lớp" data-theme="midnight" data-trans="iris" data-words="CÂU HỎI,CHIA SẺ,LẮNG NGHE,Ý KIẾN">
+  <div class="kick rv abs" style="left:120px;top:150px">Hỏi lớp</div>
+  <div class="q t-1 split">Theo các bạn, khi nào mắc sai lầm <em>thực sự</em> đáng xấu hổ?</div>
+  <div class="hint rv" data-step="1">Mời một hai bạn chia sẻ.</div>
+  <svg class="ico g-gold bulb glow rv z" style="--d:.5s;--gl:rgba(255,215,130,.6)" aria-hidden="true"><use href="#i-bulb"/></svg>
+</section>
+
+<!-- ================= 12. TỔNG KẾT (nền sáng) ================= -->
+<section class="slide s12" data-title="Tổng kết" data-theme="champagne" data-trans="push" data-words="NHẬN SAI,LÀM LẠI,TIẾN BỘ,NGHIÊM TÚC">
+  <div class="kick rv abs" style="left:120px;top:110px">Tổng kết</div>
+  <div class="t-1 split abs" style="left:120px;top:150px;width:1500px">Nhóm xin gom lại <em>ba điều</em></div>
+  <div class="rows">
+    <div class="row rv" data-step="1"><div class="no">01</div><div class="tx">Sai có thể gây hậu quả nên cần nghiêm túc.</div></div>
+    <div class="row rv" data-step="2"><div class="no">02</div><div class="tx">Sai một lần không có nghĩa là mình kém.</div></div>
+    <div class="row rv" data-step="3"><div class="no">03</div><div class="tx">Quan trọng là nhận sai, tìm ra sai ở đâu rồi làm lại.</div></div>
+    <div class="slot" data-editable contenteditable="false" spellcheck="false">Ý của lớp: nhấn vào đây để nhập</div>
+  </div>
+</section>
+
+<!-- ================= 13. GIẢI PHÁP (nền sáng ấm) ================= -->
+<section class="slide s13" data-title="Giải pháp" data-theme="amber" data-trans="light" data-words="HY VỌNG,KIÊN TRÌ,DÁM THỬ,TRƯỞNG THÀNH">
+  <div class="kick rv abs" style="left:120px;top:110px">Giải pháp</div>
+  <div class="t-1 split abs" style="left:120px;top:150px;width:1500px">Ba việc <em>làm được ngay</em></div>
+  <svg class="pth" viewBox="0 0 1920 1080" aria-hidden="true"><path class="s draw glowl warm" data-step="1" pathLength="1" d="M130 610 C 230 610 250 560 330 560 S 800 450 960 450 S 1440 340 1590 340 L 1880 300" stroke="url(#gHd)" style="stroke-width:5px;--d:.2s"/></svg>
+  <div class="med m1 rv z" data-step="1"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-lens"/></svg></div>
+  <div class="sol s1b rv" data-step="1"><div class="t-3">Thay đổi góc nhìn</div><p class="body">Xem thất bại là một phần của quá trình học hỏi và trưởng thành, giúp ta rút kinh nghiệm.</p></div>
+  <div class="med m2 rv z" data-step="2"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-step"/></svg></div>
+  <div class="sol s2b rv" data-step="2"><div class="t-3">Dám thử sức</div><p class="body">Mạnh dạn bước ra khỏi vùng an toàn, đối mặt với khó khăn và thử thách.</p></div>
+  <div class="med m3 rv z" data-step="3"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-loop"/></svg></div>
+  <div class="sol s3b rv" data-step="3"><div class="t-3">Học hỏi và kiên trì</div><p class="body">Rút bài học từ mỗi lần vấp ngã, sửa chữa sai lầm và không ngừng cố gắng tiến về phía trước.</p></div>
+</section>
+
+<!-- ================= 14. KẾT ================= -->
+<section class="slide s14" data-title="Lời kết" data-theme="dawn" data-trans="light" data-intensity="0" data-dust="1" data-trail="0" data-backstep="2" data-words="ÁNH SÁNG,HY VỌNG,TRƯỞNG THÀNH,BẢN LĨNH">
+  <div class="cam">
+    <div class="scene">
+      <img class="photo" id="imgEnd" alt="" decoding="async">
+      <div class="dark" data-step="1"></div>
+      <div class="warm" data-step="1"></div>
+      <div class="ray r1" data-step="1"></div><div class="ray r2" data-step="1"></div><div class="ray r3" data-step="1"></div>
+      <div class="fog"></div><div class="sideg"></div><div class="vig2"></div>
+    </div>
+  </div>
+  <div class="end-text">
+    <div class="e-q rv" data-step="0" data-out="1" id="endQ">Ngay cả những phát minh vĩ đại cũng hiếm khi thành công ngay từ lần đầu. Vậy mà chúng ta mới thất bại một lần đã muốn bỏ cuộc rồi sao?</div>
+    <div class="e-m">
+      <svg class="spark" viewBox="0 0 520 8" aria-hidden="true"><path class="s draw glowl warm" data-step="1" pathLength="1" d="M0 4H520" stroke="url(#gH)" style="stroke-width:6px"/></svg>
+      <div class="t-xl split" data-step="1">Thất bại không đáng xấu hổ.</div>
+      <div class="t-2 rv" data-step="1" style="--d:.9s">Sai mà dám nhìn lại, sửa rồi thử tiếp mới là điều đáng nể.</div>
+    </div>
+    <div class="e-t rv" data-step="2">Nhóm 2 xin cảm ơn cô và các bạn đã lắng nghe</div>
+  </div>
+  <div data-step="3" hidden aria-hidden="true"></div><!-- bước 3: tắt dần về màn hình đen -->
+  <div class="credit" id="creditEnd"></div>
+</section>
+
+  </div>
+
+  <div id="flash"></div>
+  <canvas id="dust"></canvas>
+  <canvas id="fx"></canvas>
+  <div id="endfade"></div>
+  <div id="hint">Bấm → hoặc nhấp chuột để tiếp tục · H xem phím tắt</div>
+
+  <div id="help"><h2>Phím tắt</h2><dl>
+    <dt>→ ↓ Space Enter</dt><dd>Hiện ý kế tiếp hoặc sang slide sau</dd>
+    <dt>← ↑ Backspace</dt><dd>Lùi một ý hoặc về slide trước</dd>
+    <dt>Home / End</dt><dd>Về slide đầu / slide cuối</dd>
+    <dt>O</dt><dd>Danh sách slide</dd>
+    <dt>P</dt><dd>Cửa sổ người dẫn (ghi chú, đồng hồ)</dd>
+    <dt>N</dt><dd>Hiện ghi chú ngay trên màn hình</dd>
+    <dt>E</dt><dd>Gõ ý của lớp lên slide Tổng kết (Esc để xong)</dd>
+    <dt>L</dt><dd>Bật hoặc tắt chế độ giảm hiệu ứng · Hiện tại: <span class="lowfx-status" id="lowFxStatus" aria-live="polite">Đang tắt</span></dd>
+    <dt>F</dt><dd>Toàn màn hình</dd>
+    <dt>D</dt><dd>Hiện thông báo thiếu tư liệu</dd>
+    <dt>R</dt><dd>Đặt lại đồng hồ</dd>
+  </dl></div>
+  <div id="overview"><h2>Danh sách slide</h2><div class="grid" id="ovGrid"></div></div>
+</div>
+</div>
+<div id="notebar"></div>
+<div id="blackout" aria-hidden="true"></div>
+
+<script>
+/* =====================================================================
+   01. CẤU HÌNH: chỉnh màu, tốc độ, nguồn ảnh và video tại đây
+   ===================================================================== */
+const CONFIG = {
+  speed: 1,                               // nhân tốc độ chuyển động nền
+  lowFx: false,                           // true = giảm hiệu ứng từ đầu (phím L bật/tắt)
+  quality:  { normal: .6, low: .4 },      // độ phân giải canvas nền
+  dust:     { normal: 34, low: 14 },      // số hạt bụi sáng ở slide mở đầu và kết
+  burst:    { normal: 130, low: 50 },     // số hạt khi bùng nổ
+  words:    { normal: 4, low: 2 },        // số chữ trôi tối đa cùng lúc
+  transitionMs: 1100,
+  targetMinutes: 9,
+  media: {
+    /* ---- Video: file đặt tại assets/video/falcon1-launch.mp4 ----
+       Nguồn: NASA SVS "SpaceX IMAP Liftoff - Launch Angle 2" (1920x1080)
+       https://svs.gsfc.nasa.gov/vis/a010000/a014900/a014904/KSC-20250924-MH-SPX01-0001-SpaceX_IMAP_Launch_Angle_2-M16779.mp4
+       Đây là footage Falcon 9 dùng minh họa, KHÔNG phải Falcon 1. */
+    video: ['assets/video/falcon1-launch.mp4'],
+    // Giây bắt đầu phát. Brief yêu cầu 5, nhưng kiểm tra frame cho thấy 5.0 đến 6.96 giây là màn hình đen,
+    // khung hình có tên lửa đầu tiên ở 7.0 giây. Đặt 5 nếu cần đúng theo brief (sẽ có khoảng 2 giây đen).
+    startAt: 7.0,
+    rate: .8,                              // tốc độ phát
+    loop: false,                           // false = dừng ở khung cuối; true = quay lại đúng startAt
+    /* ---- Ảnh dự phòng cho slide Falcon 1 (Flight 4, KHÔNG phải Falcon 9) ----
+       Wikimedia Commons: File:Falcon_1_Flight_4_launch.jpg */
+    still: [
+      'https://upload.wikimedia.org/wikipedia/commons/5/5d/Falcon_1_Flight_4_launch.jpg?utm_campaign=index&utm_content=original&utm_source=commons.wikimedia.org',
+      'assets/images/falcon1-flight4.jpg'
+    ],
+    /* ---- Ảnh nhân vật (Unsplash, giấy phép Unsplash). Chưa xác minh người chụp của hai mã ảnh này ---- */
+    open: [
+      'https://images.unsplash.com/photo-1739296385025-926d34408f57?auto=format&fit=crop&fm=jpg&ixid=NHwxMjA3fDA%3D&ixlib=rb-4.1.0&q=60&w=3000',
+      'assets/images/opening.jpg'
+    ],
+    end: [
+      'https://images.unsplash.com/photo-1758229246656-e8793e290f6a?auto=format&fit=crop&fm=jpg&ixid=NHwxMjA3fDA%3D&ixlib=rb-4.1.0&q=60&w=3000',
+      'assets/images/ending.jpg'
+    ],
+    openPos: '50% 30%',                    // object-position ảnh mở đầu (chỉnh để chủ thể nằm đúng chỗ)
+    endPos:  '50% 30%',                    // object-position ảnh kết
+    openTextSide: 'left',                  // 'left' hoặc 'right': phía đặt chữ ở slide mở đầu (đặt ngược phía chủ thể)
+    endTextSide:  'left',
+    credit: 'Ảnh: Unsplash (giấy phép Unsplash)'
+  },
+  themes: {
+    night:     { a:'#04060E', b:'#101A3E', blob1:'#2D49B8', blob2:'#E8CF94', line:'#A9BCFF', dot:'#F6E7BD' },
+    midnight:  { a:'#060B1E', b:'#13224F', blob1:'#2E5BFF', blob2:'#6FDCEE', line:'#8FB8FF', dot:'#CFE0FF' },
+    violet:    { a:'#0A0720', b:'#241459', blob1:'#6B4BFF', blob2:'#3FD0E8', line:'#BBA6FF', dot:'#E1D6FF' },
+    graphite:  { a:'#0C0F16', b:'#1D2330', blob1:'#3A4A78', blob2:'#E3B764', line:'#9DB6E0', dot:'#F2CB7E' },
+    paper:     { a:'#F6F2E8', b:'#E3E9F7', blob1:'#7FA2FF', blob2:'#EBD39C', line:'#2450E6', dot:'#2450E6' },
+    navy:      { a:'#050B20', b:'#0D2260', blob1:'#2A63FF', blob2:'#EBD7A4', line:'#86B5FF', dot:'#DCE8FF' },
+    cobalt:    { a:'#0B2BB8', b:'#2A63FF', blob1:'#6FE4F6', blob2:'#FFE3A3', line:'#CFE3FF', dot:'#FFFFFF' },
+    teal:      { a:'#032A30', b:'#08545C', blob1:'#2BC7B4', blob2:'#F5D58A', line:'#9FEDE3', dot:'#D8FFF8' },
+    champagne: { a:'#FBF3E2', b:'#EFE0BE', blob1:'#F2CE85', blob2:'#9DB9FF', line:'#B9701A', dot:'#B9701A' },
+    amber:     { a:'#FFF1D2', b:'#F8D58B', blob1:'#FFFFFF', blob2:'#FFB45E', line:'#B4560E', dot:'#B4560E' },
+    dawn:      { a:'#2A1B3D', b:'#B4682E', blob1:'#FFD98A', blob2:'#FFFFFF', line:'#FFE3A3', dot:'#FFF1C9' }
+  }
+};
+
+/* Ghi chú người nói: lời thoại theo kịch bản đã chỉnh sửa (giữ nguyên nội dung) */
+const NOTES = [
+  /* 1 */ 'Em xin chào cô và các bạn. Em là …, đại diện cho nhóm 2 gồm các bạn …, xin trình bày chủ đề “Thất bại là điều đáng xấu hổ”.<br><br><b>Gợi ý:</b> màn hình đen lúc đầu. Bấm một lần để ánh sáng hiện lên, đợi vài giây cho khán giả nhìn bóng người trước khi nói. Bấm → tiếp theo để sang slide thành viên.',
+  /* 2 */ '<b>Chưa có lời thoại cho slide này trong kịch bản.</b> Bảy tên tự hiện lần lượt, mỗi tên cách nhau khoảng một giây (Huy Tín, Bảo Trân, Thanh Trúc, Minh Trường, Minh Trí, Ngọc Trâm, Minh Tiến). Có thể đọc tên từng bạn khi tên hiện ra, hoặc thêm lời giới thiệu vào mảng NOTES, mục số 2.',
+  /* 3 */ 'Để hiểu rõ hơn về quan điểm này, em có một câu hỏi dành cho các bạn.<br>Các bạn đã bao giờ vì sợ mắc sai lầm mà không dám thử sức với một điều gì chưa? Nếu có, mời các bạn giơ tay giúp em.<br><br><b>Nhiều tay:</b> Cảm ơn các bạn đã chia sẻ. Có vẻ không ít bạn từng trải qua cảm giác này. Chính nỗi sợ sai đôi khi khiến chúng ta chùn bước và gắn mác “đáng xấu hổ” cho những lần chưa thành công.<br><b>Ít tay:</b> Cảm ơn các bạn. Có thể do các bạn chưa dám thử sức, hoặc đơn giản là còn ngại chia sẻ. Việc ngại giơ tay cũng cho thấy nỗi sợ thất bại đang khá phổ biến.',
+  /* 4 */ 'Thực tế, nhiều người vẫn nghĩ rằng “thất bại là điều đáng xấu hổ”. Vì vậy hôm nay nhóm em muốn cùng cả lớp xem quan niệm này đúng hay sai, và có nên bỏ nó đi không.',
+  /* 5 */ 'Thất bại là khi chúng ta không đạt được mục tiêu hay kỳ vọng. Xấu hổ là cảm giác tiêu cực khi mắc sai lầm hoặc không đạt điều mình mong muốn. Quan niệm này thể hiện rõ trong học tập: có bạn không dám tham gia thi học sinh giỏi, có bạn biết đáp án vẫn không dám phát biểu, có bạn ngại nêu ý kiến riêng vì sợ sai, sợ bị đánh giá. Như vậy, nhiều người vẫn còn e ngại và xấu hổ khi đối mặt với thất bại.',
+  /* 6 */ 'Muốn thay đổi một định kiến, trước hết phải tìm ra gốc rễ của nó. Quan niệm “thất bại là điều đáng xấu hổ” xuất phát từ hai nguyên nhân khá quen thuộc ngay quanh chúng ta.<br><br>Nguyên nhân thứ nhất là nỗi sợ thất bại. Chúng ta thường nghĩ mình không đủ năng lực, không đủ giỏi, không đủ cố gắng, nên không dám thử sức, nhất là với những điều nằm ngoài vùng an toàn.<br><br>Nguyên nhân thứ hai là sự thiếu can đảm và lười biếng. Đôi khi năng lực thì đủ, nhưng chúng ta lại không đủ can đảm để hành động. Chúng ta biết mình cần cố gắng mà vẫn trì hoãn, biết mình phải thay đổi mà lại chọn cách dễ dàng và an toàn hơn.',
+  /* 7 */ 'Chính quan niệm “thất bại là điều đáng xấu hổ” đã gây ra nhiều ảnh hưởng tiêu cực đến suy nghĩ và hành động của chúng ta.<br><br>Trước hết, quan niệm này khiến con người dần đánh mất niềm tin vào bản thân, luôn nhìn năng lực của mình một cách tiêu cực và không dám khẳng định giá trị của chính mình.<br>Từ đó, chúng ta dễ bỏ lỡ nhiều cơ hội học hỏi, trải nghiệm và phát triển bản thân. Chúng ta cũng trở nên phụ thuộc vào đánh giá của người khác, không dám tự đưa ra quyết định hay theo đuổi những mục tiêu lớn hơn.<br>Bên cạnh đó, khi luôn xem thất bại là điều đáng xấu hổ, chúng ta chỉ chọn những việc chắc chắn thành công mà không dám thử thách bản thân. Vì vậy chúng ta thiếu trải nghiệm, không học được từ sai lầm và ngày càng khó tiến bộ.',
+  /* 8 */ 'Từ những tác động tiêu cực trên, có thể thấy quan niệm này không đúng đắn và cần được từ bỏ.<br><br>Khi không còn sợ thất bại, chúng ta sẽ mạnh dạn bước ra khỏi vùng an toàn, thử sức với những điều mới và nắm bắt cơ hội.<br>Thất bại còn là một tín hiệu phản hồi thực tế, giúp ta nhận ra lỗ hổng, rút kinh nghiệm và điều chỉnh phương pháp cho hiệu quả hơn.<br>Đối diện với thất bại cũng rèn luyện bản lĩnh và tinh thần vượt khó. Ta giữ được bình tĩnh trước nghịch cảnh, coi thất bại là một bài học để chủ động sửa sai thay vì chùn bước.<br><br><b>Hiệu ứng:</b> XẤU HỔ vỡ ra, HỌC HỎI hiện lên. Chờ hết hiệu ứng (khoảng 3 giây) rồi mới nói.',
+  /* 9 */ '<b>Chưa có lời thoại cho slide này trong file docx đã gửi.</b> Dán lời thoại cuối của nhóm vào đây (sửa trong mảng NOTES, mục số 9).<br><br>Nội dung slide: phân biệt thất bại khi cố gắng, học hỏi, thử nghiệm với sai lầm do thiếu trách nhiệm (không nhận lỗi, không sửa chữa). Dòng cuối: “Sai có thể gây hậu quả nên cần nghiêm túc.”',
+  /* 10 */ 'Một ví dụ về việc vượt qua thất bại để thành công là tỷ phú Elon Musk với công ty SpaceX. Năm 2008, SpaceX đứng trước nguy cơ phá sản sau ba lần phóng thử tên lửa Falcon 1 thất bại, khiến tài chính công ty gần như cạn kiệt. Tuy nhiên, nhờ nỗ lực và kiên trì, ông đã thành công ở lần phóng thứ tư.<br><br><b>Lưu ý:</b> slide ghi mốc 3/2006, 3/2007, 8/2008 (thất bại) và 28/9/2008 (thành công), nhấn vào “cả đội ngũ”. Nếu đọc nguyên văn lời thoại, nhớ nhắc cả đội ngũ kỹ sư.<br><b>Video:</b> cảnh phóng là footage Falcon 9 dùng minh họa, không phải Falcon 1 (đã có chú thích trên slide).',
+  /* 11 */ 'Giờ nhóm em xin nghe ý kiến của các bạn. <b>Theo các bạn, khi nào thì mắc sai lầm thực sự đáng xấu hổ?</b> Mời một hai bạn.<br><br>(Phản hồi. Nếu ý giống nhóm: “Cảm ơn bạn, ý này giống điều bạn [tên] vừa nói.” Nếu ý khác nhóm: “Cảm ơn bạn, ý này nhóm em chưa nghĩ tới, nhóm xin ghi nhận.” Nếu lớp im lặng: “Vậy em hỏi dễ hơn: điều gì giúp bạn dám thử lại sau một lần sai?”)',
+  /* 12 */ 'Từ ý kiến của nhóm và của các bạn, nhóm em xin gom lại ba điều <b>[sửa theo lớp nếu cần]</b>. Một, sai có thể gây hậu quả nên cần nghiêm túc. Hai, sai một lần không có nghĩa là mình kém. Ba, quan trọng là nhận sai, tìm ra sai ở đâu rồi làm lại.<br>(Nếu có ý chưa thống nhất: “Còn một ý chưa thống nhất là […], nhóm em xin để mở.”)<br><br><b>Mẹo:</b> bấm E để gõ thêm ý của lớp lên slide.',
+  /* 13 */ 'Giải pháp. Thứ nhất, thay đổi góc nhìn về thất bại: xem thất bại là một phần của quá trình học hỏi và trưởng thành, giúp ta rút kinh nghiệm. Thứ hai, dám thử sức: mạnh dạn bước ra khỏi vùng an toàn, đối mặt với khó khăn và thử thách. Thứ ba, học hỏi và kiên trì: rút ra bài học từ mỗi lần vấp ngã, sửa chữa sai lầm và không ngừng cố gắng tiến về phía trước.',
+  /* 14 */ 'Ngay cả những phát minh vĩ đại cũng hiếm khi thành công ngay từ lần đầu. Vậy mà chúng ta mới thất bại một lần đã muốn bỏ cuộc rồi sao?<br><b>Thất bại không đáng xấu hổ. Sai mà dám nhìn lại, sửa rồi thử tiếp mới là điều đáng nể.</b> Nhóm em xin cảm ơn cô và các bạn đã lắng nghe.<br><br><b>Kết thúc:</b> sau lời cảm ơn, bấm → một lần nữa để ánh sáng tắt dần về màn hình đen (khoảng 4 giây). Bài sẽ không tự kết thúc.'
+];
+
+/* =====================================================================
+   02. TIỆN ÍCH
+   ===================================================================== */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const rand = (a,b) => a + Math.random()*(b-a);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const hex2rgb = h => { h=h.replace('#',''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
+const rgba = (c,a) => `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`;
+const stage = $('#stage');
+let SCALE = 1;
+
+function fit(){
+  SCALE = Math.min(innerWidth/1920, innerHeight/1080);
+  stage.style.transform = `scale(${SCALE}) translate(-960px,-540px)`;
+}
+addEventListener('resize', fit); fit();
+
+function stagePos(el){
+  const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect(), k = s.width/1920;
+  return { x:(r.left + r.width/2 - s.left)/k, y:(r.top + r.height/2 - s.top)/k };
+}
+
+/* Tách từ để làm hiệu ứng mặt nạ trượt (giữ nguyên thẻ em/br bên trong) */
+function splitWords(root){
+  let n = 0;
+  (function walk(node){
+    [...node.childNodes].forEach(c=>{
+      if(c.nodeType === 3){
+        const frag = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(p=>{
+          if(!p) return;
+          if(/^\s+$/.test(p)){ frag.append(document.createTextNode(' ')); return; }
+          const w = document.createElement('span'); w.className = 'w';
+          const i = document.createElement('i'); i.textContent = p; i.style.setProperty('--i', n++);
+          w.append(i); frag.append(w);
+        });
+        c.replaceWith(frag);
+      } else if(c.nodeType === 1 && c.tagName !== 'BR') walk(c);
+    });
+  })(root);
+}
+$$('.split').forEach(splitWords);
+
+/* =====================================================================
+   03. NỀN: canvas nhiều lớp (lưới màu, dải sáng, quầng cực quang, quỹ đạo, vòng tròn, hình học, hạt)
+   ===================================================================== */
+const Bg = (() => {
+  const cv = $('#bg'), ctx = cv.getContext('2d');
+  const KEYS = ['a','b','blob1','blob2','line','dot'];
+  let q, parts = [], t = 0, last = performance.now(), raf = 0;
+  let cur = {}, tgt = {}, I = 1, Itgt = 1, ring = {x:1500,y:340}, ringT = {x:1500,y:340}, painted = false;
+
+  function setTheme(name){
+    const th = CONFIG.themes[name] || CONFIG.themes.night;
+    KEYS.forEach(k => { tgt[k] = hex2rgb(th[k]); if(!cur[k]) cur[k] = tgt[k].slice(); });
+    kick();
+  }
+  function build(){
+    q = CONFIG.lowFx ? CONFIG.quality.low : CONFIG.quality.normal;
+    cv.width = Math.round(1920*q); cv.height = Math.round(1080*q);
+    parts = Array.from({length: CONFIG.lowFx ? 14 : 36}, () => ({
+      a:rand(0,6.28), sp:rand(.03,.1)*(Math.random()<.5?-1:1), rx:rand(240,900), ry:rand(120,520), tilt:rand(0,3.14),
+      cx:960+rand(-260,260), cy:540+rand(-160,160), s:rand(1.4,3.4), tw:rand(0,6.28)
+    }));
+    painted = false; kick();
+  }
+  function band(x, y, w, h, rot, col, a){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(1, h/w);
+    const g = ctx.createRadialGradient(0,0,0,0,0,w);
+    g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = g; ctx.fillRect(-w,-w,w*2,w*2); ctx.restore();
+  }
+  function draw(){
+    ctx.setTransform(q,0,0,q,0,0);
+    const g = ctx.createLinearGradient(0,0,1920,1080);
+    g.addColorStop(0, rgba(cur.a,1)); g.addColorStop(1, rgba(cur.b,1));
+    ctx.fillStyle = g; ctx.fillRect(0,0,1920,1080);
+    if(I < .01) return;
+    // lưới màu (mesh): các quầng màu trôi chậm
+    [[.22,.3,780,'blob1',.07,0],[.78,.72,840,'blob2',.05,2],[.62,.12,620,'blob1',.09,4],[.3,.92,660,'blob2',.06,1]].forEach(([bx,by,r,c,s,p])=>{
+      const x = (bx + Math.sin(t*s*2+p)*.12)*1920, y = (by + Math.cos(t*s*1.7+p)*.12)*1080;
+      const rg = ctx.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0, rgba(cur[c], .3*I)); rg.addColorStop(1, rgba(cur[c], 0));
+      ctx.fillStyle = rg; ctx.fillRect(x-r,y-r,r*2,r*2);
+    });
+    // dải sáng và cực quang: hai dải elip nghiêng, nhịp thở chậm
+    if(!CONFIG.lowFx){
+      band(960 + Math.sin(t*.07)*260, 300 + Math.cos(t*.05)*60, 1500, 190, -.28 + Math.sin(t*.04)*.05, cur.blob1, .22*I*(.8+.2*Math.sin(t*.3)));
+      band(1100 + Math.cos(t*.06)*240, 800 + Math.sin(t*.05)*50, 1400, 150, -.2 + Math.cos(t*.05)*.05, cur.blob2, .16*I*(.8+.2*Math.cos(t*.27)));
+    }
+    // đường cong mềm (quỹ đạo mờ)
+    ctx.lineWidth = 2; ctx.strokeStyle = rgba(cur.line, .14*I);
+    for(let i=0;i<4;i++){
+      const y0 = 260 + i*180;
+      ctx.beginPath(); ctx.moveTo(-40, y0 + Math.sin(t*.2+i)*60);
+      ctx.bezierCurveTo(480, y0-230+Math.sin(t*.25+i*1.3)*90, 1180, y0+260+Math.cos(t*.22+i)*90, 1960, y0-60+Math.sin(t*.18+i*2)*70);
+      ctx.stroke();
+    }
+    // vòng tròn đồng tâm lan ra
+    for(let i=0;i<3;i++){
+      const p = ((t*.045)+i/3)%1, r = 60 + p*940, a = (1-p)*.2*I*Math.min(1,p/.1);
+      ctx.strokeStyle = rgba(cur.line, a); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(ring.x, ring.y, r, 0, 6.283); ctx.stroke();
+    }
+    // hình học trừu tượng xoay chậm
+    ctx.strokeStyle = rgba(cur.line, .1*I); ctx.lineWidth = 2;
+    poly(1640, 840, 170, 3, t*.06); poly(250, 230, 120, 4, -t*.05+.4); poly(1100, 160, 70, 6, t*.04);
+    // hạt sáng chạy theo quỹ đạo
+    parts.forEach(p=>{
+      const a = p.a + t*p.sp, ca = Math.cos(a)*p.rx, sa = Math.sin(a)*p.ry, ct = Math.cos(p.tilt), st = Math.sin(p.tilt);
+      const x = p.cx + ca*ct - sa*st, y = p.cy + ca*st + sa*ct;
+      ctx.fillStyle = rgba(cur.dot, (.28 + .28*Math.sin(t*.9+p.tw))*I);
+      ctx.beginPath(); ctx.arc(x,y,p.s,0,6.283); ctx.fill();
+    });
+  }
+  function poly(x,y,r,n,rot){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){ const a = rot + i*6.283/n; i ? ctx.lineTo(x+Math.cos(a)*r, y+Math.sin(a)*r) : ctx.moveTo(x+Math.cos(a)*r, y+Math.sin(a)*r); }
+    ctx.stroke();
+  }
+  function frame(now){
+    raf = 0;
+    const dt = Math.max(0, Math.min(.05, (now-last)/1000)); last = now;
+    Perf.sample(dt);
+    if(document.hidden){ return; }
+    t += dt*CONFIG.speed;
+    const k = 1-Math.exp(-dt*2.2); let delta = 0;
+    KEYS.forEach(key => cur[key] = cur[key].map((v,i)=>{ const d = tgt[key][i]-v; delta += Math.abs(d); return v + d*k; }));
+    const di = Itgt - I; I += di*(1-Math.exp(-dt*1.5));
+    ring.x += (ringT.x-ring.x)*k; ring.y += (ringT.y-ring.y)*k;
+    // khi cường độ về 0 và màu ổn định (slide ảnh, video), vẽ một lần rồi ngừng hẳn vòng lặp
+    if(I < .01 && delta < .6 && Math.abs(di) < .01){ if(!painted){ painted = true; draw(); } return; }
+    painted = false; draw(); raf = requestAnimationFrame(frame);
+  }
+  function kick(){ if(!raf){ last = performance.now(); raf = requestAnimationFrame(frame); } }
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) kick(); });
+  return {
+    start(){ setTheme('night'); build(); kick(); }, build, setTheme, kick,
+    setIntensity(v){ Itgt = v; kick(); },
+    setRing(x,y){ ringT.x = x; ringT.y = y; },
+    snap(){ KEYS.forEach(k => cur[k] = tgt[k].slice()); I = Itgt; painted = false; kick(); }
+  };
+})();
+
+/* Tự phát hiện máy yếu: khung hình quá chậm thì bật chế độ giảm hiệu ứng */
+const Perf = (() => {
+  let n = 0, sum = 0, done = false;
+  return { sample(dt){
+    if(done || dt <= 0 || document.hidden) return;
+    if(++n > 20) sum += dt;
+    if(n === 150){ done = true; if(sum/130 > .034 && !CONFIG.lowFx){ setLow(true); console.info('[Ánh sáng sau vấp ngã] Máy chạy chậm, đã tự bật chế độ giảm hiệu ứng (phím L để tắt).'); } }
+  }};
+})();
+function setLow(on){
+  CONFIG.lowFx = on; document.body.classList.toggle('lowfx', on);
+  syncLowStatus();
+  Bg.build(); Fx.resize(); Dust.build(); Words.refresh();
+}
+function syncLowStatus(){
+  const status = $('#lowFxStatus');
+  if(status) status.textContent = CONFIG.lowFx ? 'Đang bật' : 'Đang tắt';
+}
+
+/* =====================================================================
+   04. CHỮ NGẪU NHIÊN: một từ hiện, trôi ngắn theo hướng ngẫu nhiên, mờ dần, từ mới hiện chỗ khác
+   ===================================================================== */
+const Words = (() => {
+  const host = $('#words'); let pool = [], tm = 0, live = 0;
+  function create(){
+    const max = CONFIG.lowFx ? CONFIG.words.low : CONFIG.words.normal;
+    if(live >= max || !pool.length) return;
+    const el = document.createElement('span'), word = pick(pool), depth = rand(.3,1), outline = Math.random() < .5;
+    const size = Math.min(60 + depth*120, 1500/(word.length*.66));
+    el.className = 'wd' + (outline ? ' out' : ''); el.textContent = word; el.style.fontSize = size + 'px';
+    const w = word.length*size*.66;
+    el.style.left = (rand(-40, Math.max(0, 1920 - w + 40))|0) + 'px';
+    el.style.top = (rand(20, 1080 - size*1.1)|0) + 'px';
+    const peak = outline ? .16 + .1*depth : .05 + .05*depth, ang = rand(0, 6.283), dist = rand(90, 240) * (.6 + depth*.6);
+    host.append(el); live++;
+    const a = el.animate([
+      { opacity:0, transform:'translate3d(0,0,0)' },
+      { opacity:peak, offset:.3 },
+      { opacity:peak, offset:.68 },
+      { opacity:0, transform:`translate3d(${Math.cos(ang)*dist|0}px,${Math.sin(ang)*dist|0}px,0)` }
+    ], { duration: rand(6500, 10500), easing:'ease-in-out', fill:'forwards' });
+    a.onfinish = a.oncancel = () => { el.remove(); live = Math.max(0, live-1); };
+  }
+  function loop(){
+    clearTimeout(tm); tm = 0;
+    if(document.hidden || !pool.length) return;
+    create(); tm = setTimeout(loop, rand(900, 1900));
+  }
+  document.addEventListener('visibilitychange', () => { document.hidden ? clearTimeout(tm) : loop(); });
+  return {
+    set(list){ pool = list || []; loop(); },
+    color(c){ host.style.color = c; },
+    refresh(){ loop(); },
+  };
+})();
+
+/* =====================================================================
+   05. BỤI SÁNG: canvas nhỏ, chỉ chạy ở slide mở đầu và slide kết
+   ===================================================================== */
+const Dust = (() => {
+  const cv = $('#dust'), ctx = cv.getContext('2d');
+  let motes = [], raf = 0, last = 0, active = false, q = .4, col = '255,236,190';
+  function build(){
+    q = CONFIG.lowFx ? .3 : .4; cv.width = 1920*q; cv.height = 1080*q;
+    motes = Array.from({length: CONFIG.lowFx ? CONFIG.dust.low : CONFIG.dust.normal}, () => ({
+      x:rand(0,1920), y:rand(0,1080), r:rand(1.5,4.4), vx:rand(-8,8), vy:rand(-14,-3), p:rand(0,6.28), sp:rand(.4,1.1)
+    }));
+  }
+  function loop(now){
+    raf = 0; if(!active || document.hidden) return;
+    const dt = Math.max(0, Math.min(.05, (now-last)/1000)); last = now;
+    ctx.setTransform(q,0,0,q,0,0); ctx.clearRect(0,0,1920,1080);
+    motes.forEach(m => {
+      m.x += m.vx*dt; m.y += m.vy*dt; m.p += m.sp*dt;
+      if(m.y < -20) m.y = 1100; if(m.x < -20) m.x = 1940; if(m.x > 1940) m.x = -20;
+      const a = .2 + .35*Math.abs(Math.sin(m.p));
+      const g = ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r*4);
+      g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g; ctx.fillRect(m.x-m.r*4, m.y-m.r*4, m.r*8, m.r*8);
+    });
+    raf = requestAnimationFrame(loop);
+  }
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) set(active); });
+  function set(on){
+    active = on; cv.classList.toggle('on', on);
+    if(!on){ cancelAnimationFrame(raf); raf = 0; ctx.clearRect(0,0,1920,1080); return; }
+    if(!raf){ last = performance.now(); raf = requestAnimationFrame(loop); }
+  }
+  build();
+  return { set, build };
+})();
+
+/* =====================================================================
+   06. QUỸ ĐẠO: đường tiến trình ở chân slide
+   ===================================================================== */
+const Trail = (() => {
+  const svg = $('#trail'), base = $('#trailBase'), prog = $('#trailProg'), orb = $('#trailOrb'), halo = $('#trailHalo'), ticks = $('#trailTicks');
+  let L = 0, p = 0, pt = 0, raf = 0, n = 14;
+  function init(count){
+    n = count; L = base.getTotalLength(); ticks.innerHTML = '';
+    for(let i=0;i<n;i++){ const q = base.getPointAtLength(L*i/(n-1)); const c = document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('class','tick'); c.setAttribute('r',3.2); c.setAttribute('cx',q.x); c.setAttribute('cy',q.y); ticks.append(c); }
+  }
+  function render(){
+    prog.setAttribute('stroke-dasharray', `${p*1000} 1000`);
+    const q = base.getPointAtLength(L*p); orb.setAttribute('cx',q.x); orb.setAttribute('cy',q.y); halo.setAttribute('cx',q.x); halo.setAttribute('cy',q.y);
+  }
+  function tick(){
+    p += (pt-p)*.07; render();
+    if(Math.abs(pt-p) > .0008) raf = requestAnimationFrame(tick); else { p = pt; render(); raf = 0; }
+  }
+  return { init, set(i, visible, color){
+    pt = i/(n-1); svg.classList.toggle('hide', !visible); svg.style.color = color;
+    if(!raf) raf = requestAnimationFrame(tick);
+  }};
+})();
+
+/* =====================================================================
+   07. HIỆU ỨNG BÙNG NỔ: hạt, sóng xung kích, tia sáng, flash (rAF chỉ chạy khi có hiệu ứng)
+   ===================================================================== */
+const Fx = (() => {
+  const cv = $('#fx'), ctx = cv.getContext('2d'), flashEl = $('#flash');
+  let q = .7, parts = [], rings = [], rays = [], running = false, last = 0;
+  function resize(){ q = CONFIG.lowFx ? .45 : .7; cv.width = 1920*q; cv.height = 1080*q; }
+  resize();
+  function kick(){ if(!running){ running = true; last = performance.now(); requestAnimationFrame(loop); } }
+  function burst(x, y, o={}){
+    const max = CONFIG.lowFx ? CONFIG.burst.low : CONFIG.burst.normal, n = Math.min(o.n || 90, max);
+    const cols = o.colors || ['#E8CF94','#FFFFFF','#8DBBFF'];
+    for(let i=0;i<n;i++){ const a = rand(0,6.283), v = rand(120,900)*(o.power||1); parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-(o.up||0),life:rand(.9,1.8),age:0,s:rand(2,5.5),c:pick(cols)}); }
+    kick();
+  }
+  function shock(x, y, o={}){ rings.push({x,y,r:20,max:o.max||820,life:o.life||1.3,age:0,c:o.color||'#E8CF94',w:o.w||7}); kick(); }
+  function raysAt(x, y, o={}){
+    const n = CONFIG.lowFx ? 14 : 26;
+    for(let i=0;i<n;i++) rays.push({x,y,a:i*6.283/n+rand(-.05,.05),len:rand(500,1100),age:0,life:1.6,c:o.color||'#FFE9B0'});
+    kick();
+  }
+  function flash(color='#fff', peak=.5, ms=900){
+    flashEl.style.background = color;
+    flashEl.animate([{opacity:0},{opacity:peak,offset:.12},{opacity:0}],{duration:ms,easing:'ease-out'});
+  }
+  function loop(now){
+    const dt = Math.max(0, Math.min(.05,(now-last)/1000)); last = now;
+    ctx.setTransform(q,0,0,q,0,0); ctx.clearRect(0,0,1920,1080);
+    rings = rings.filter(r => { r.age += dt; const p = r.age/r.life; if(p>=1) return false;
+      const e = 1-Math.pow(1-p,3); ctx.strokeStyle = r.c; ctx.globalAlpha = (1-p)*.8; ctx.lineWidth = r.w*(1-p)+1;
+      ctx.beginPath(); ctx.arc(r.x,r.y,r.r+(r.max-r.r)*e,0,6.283); ctx.stroke(); return true; });
+    rays = rays.filter(r => { r.age += dt; const p = r.age/r.life; if(p>=1) return false;
+      const e = 1-Math.pow(1-p,3); ctx.strokeStyle = r.c; ctx.globalAlpha = (1-p)*.6; ctx.lineWidth = 3;
+      const d0 = r.len*e*.25, d1 = r.len*e; ctx.beginPath(); ctx.moveTo(r.x+Math.cos(r.a)*d0, r.y+Math.sin(r.a)*d0); ctx.lineTo(r.x+Math.cos(r.a)*d1, r.y+Math.sin(r.a)*d1); ctx.stroke(); return true; });
+    parts = parts.filter(p => { p.age += dt; if(p.age>=p.life) return false;
+      const k = Math.exp(-dt*2.4); p.vx *= k; p.vy = p.vy*k + 160*dt; p.x += p.vx*dt; p.y += p.vy*dt;
+      ctx.globalAlpha = 1-p.age/p.life; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.s*(1-p.age/p.life*.5),0,6.283); ctx.fill(); return true; });
+    ctx.globalAlpha = 1;
+    if(parts.length || rings.length || rays.length) requestAnimationFrame(loop); else { running = false; ctx.clearRect(0,0,1920,1080); }
+  }
+  return { burst, shock, rays: raysAt, flash, resize };
+})();
+
+/* =====================================================================
+   08. ẢNH NHÂN VẬT (mở đầu, kết) và ẢNH + VIDEO FALCON (slide 10)
+   ===================================================================== */
+const Photos = (() => {
+  const state = {};
+  function load(img, list, key, pos, cb){
+    if(state[key]) return; state[key] = 1;
+    let i = 0;
+    img.style.setProperty('--pos', pos);
+    (function next(){
+      if(i >= list.length){ console.warn('[Ánh sáng sau vấp ngã] Không tải được ảnh: ' + key); Media.missing.push(key); cb && cb(false); return; }
+      const im = new Image(); im.decoding = 'async';
+      im.onload = () => { img.src = im.src; img.classList.add('ok'); cb && cb(true); };
+      im.onerror = () => { i++; next(); };
+      im.src = list[i];
+    })();
+  }
+  return { open(){ load($('#imgOpen'), CONFIG.media.open, 'ảnh mở đầu', CONFIG.media.openPos); }, end(){ load($('#imgEnd'), CONFIG.media.end, 'ảnh kết', CONFIG.media.endPos); } };
+})();
+
+const Media = (() => {
+  const vid = $('#vid'), still = $('#still'), badge = $('#mediaBadge');
+  const missing = []; let prepared = false, stillTried = false, metaReady = false, want = false, srcI = 0;
+
+  function report(){
+    const txt = missing.length ? 'Thiếu tư liệu: ' + missing.join(' · ') + '. Đặt file đúng tên vào thư mục assets rồi tải lại trang.' : '';
+    badge.textContent = txt; badge.classList.toggle('has', !!txt);
+    Pres.refresh();
+  }
+  function loadStill(){
+    if(stillTried) return; stillTried = true;
+    let i = 0;
+    (function next(){
+      if(i >= CONFIG.media.still.length){ return; }
+      const im = new Image(); im.onload = () => { still.src = im.src; still.classList.add('ok'); }; im.onerror = () => { i++; next(); }; im.src = CONFIG.media.still[i];
+    })();
+  }
+  function seekStart(){
+    try{ vid.currentTime = CONFIG.media.startAt; }catch(e){}
+    vid.playbackRate = CONFIG.media.rate; vid.defaultPlaybackRate = CONFIG.media.rate;
+  }
+  function tryPlay(){
+    if(!want || !metaReady) return;
+    seekStart();
+    const p = vid.play(); if(p && p.catch) p.catch(()=>{});
+  }
+  function tryNextSrc(){
+    srcI++;
+    if(srcI < CONFIG.media.video.length){ metaReady = false; vid.src = CONFIG.media.video[srcI]; vid.load(); return; }
+    vid.classList.remove('ok'); missing.push(CONFIG.media.video[0]); console.warn('[Ánh sáng sau vấp ngã] Thiếu video: ' + CONFIG.media.video[0]); report();
+  }
+  function prepare(){
+    if(prepared) return; prepared = true;
+    vid.preload = 'auto';
+    vid.addEventListener('error', tryNextSrc);
+    // Chờ metadata và có thể seek rồi mới đặt điểm bắt đầu
+    vid.addEventListener('loadedmetadata', () => { metaReady = true; if(vid.seekable.length) seekStart(); tryPlay(); });
+    vid.addEventListener('loadeddata', () => { if(want) tryPlay(); });
+    vid.addEventListener('playing', () => { vid.playbackRate = CONFIG.media.rate; vid.classList.add('ok'); still.classList.add('under'); });
+    vid.addEventListener('play', () => { vid.playbackRate = CONFIG.media.rate; });
+    vid.addEventListener('ended', () => {
+      if(CONFIG.media.loop && want){ seekStart(); vid.play().catch(()=>{}); }   // nếu lặp, quay lại đúng điểm bắt đầu
+      // nếu không lặp: giữ khung hình cuối, không quay về đầu clip
+    });
+    vid.src = CONFIG.media.video[0]; vid.load();
+  }
+  return {
+    missing, prepare, loadStill, vid,
+    /* Vào slide: phát ngay, luôn bắt đầu từ startAt (kể cả khi quay lại) */
+    enter(){ prepare(); loadStill(); want = true; vid.classList.toggle('ok', vid.readyState >= 2 && !vid.paused); if(metaReady){ seekStart(); tryPlay(); } report(); },
+    leave(){ want = false; vid.pause(); }
+  };
+})();
+
+/* =====================================================================
+   09. AMBIENT: gắn nền, chữ trôi, bụi, quỹ đạo theo slide
+   ===================================================================== */
+const Ambient = {
+  apply(el, i, total){
+    const d = el.dataset, theme = d.theme || 'night';
+    Bg.setTheme(theme);
+    Bg.setIntensity(d.intensity !== undefined ? +d.intensity : 1);
+    const light = ['paper','champagne','amber'].includes(theme);
+    const ink = getComputedStyle(el).getPropertyValue('--ink').trim() || '#fff';
+    Words.color(ink);
+    Words.set(d.words ? d.words.split(',').filter(Boolean) : []);
+    Dust.set(d.dust === '1');
+    Trail.set(i, (d.trail || '1') === '1', ink);
+    const hud = $('#hud'); hud.style.color = ink;
+    hud.textContent = String(i+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    hud.classList.toggle('hide', i === 0 || i === total-1);
+    $('#trailProg').style.stroke = light ? 'url(#gHd)' : '';
+  }
+};
+
+/* =====================================================================
+   10. HOOKS: khoảnh khắc riêng của từng slide
+   ===================================================================== */
+const Hooks = {
+  /* S2: bảy tên hiện lần lượt, mỗi tên một hiệu ứng, đường nối vẽ theo */
+  1: {
+    timers: [],
+    enter(dir, el){
+      this.leave();
+      const items = $$('[data-seq]', el), pulse = $('#memPulse');
+      if(dir < 0){ items.forEach(e => e.classList.add('on')); pulse.style.opacity = 1; return; }
+      pulse.style.opacity = 0;
+      items.forEach(e => { const k = +e.dataset.seq; this.timers.push(setTimeout(() => e.classList.add('on'), 500 + (k-1)*850)); });
+      this.timers.push(setTimeout(() => { pulse.style.opacity = 1; }, 500 + 7*850));
+    },
+    leave(){ this.timers.forEach(clearTimeout); this.timers = []; }
+  },
+  /* S8: XẤU HỔ vỡ ra, HỌC HỎI hiện lên */
+  7: {
+    timers: [],
+    enter(dir){
+      const shame = $('#shame'), learn = $('#learn');
+      this.leave();
+      shame.innerHTML = [...'XẤU HỔ'].map(c => c === ' ' ? '<span class="sp"></span>' : `<span>${c}</span>`).join('');
+      shame.classList.remove('shake'); learn.classList.remove('show');
+      shame.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = 1; });
+      if(dir < 0){
+        shame.querySelectorAll('span').forEach(s => { s.style.transition = 'none'; s.style.opacity = 0; });
+        learn.style.transition = 'none'; learn.classList.add('show'); requestAnimationFrame(() => { learn.style.transition = ''; }); return;
+      }
+      const at = (ms, fn) => this.timers.push(setTimeout(fn, ms));
+      at(500,  () => shame.classList.add('shake'));
+      at(1250, () => {
+        shame.classList.remove('shake');
+        const c = stagePos(shame);
+        shame.querySelectorAll('span').forEach(s => { s.style.transform = `translate(${rand(-170,170)}px,${rand(-230,150)}px) rotate(${rand(-70,70)}deg)`; s.style.opacity = 0; });
+        Fx.shock(c.x, c.y, {color:'#CFE3FF', max:640}); Fx.burst(c.x, c.y, {n:70, colors:['#FFFFFF','#84EAFA','#FFE3A3'], power:.9});
+      });
+      at(1500, () => { learn.classList.add('show'); Fx.flash('#fff', .3, 800); });
+    },
+    leave(){ this.timers.forEach(clearTimeout); this.timers = []; $('#shame').classList.remove('shake'); }
+  },
+  /* S10: video Falcon: phát ngay khi vào slide, bùng nổ đúng bước Thành công */
+  9: {
+    step(s, dir){
+      if(s === 4 && dir > 0){
+        const c = stagePos($('#nodeOk .dot'));
+        setTimeout(() => { Fx.shock(c.x, c.y, {color:'#EBD7A4', max:900}); Fx.burst(c.x, c.y, {n:120, colors:['#EBD7A4','#FFFFFF','#8DBBFF'], power:1.1, up:140}); Fx.flash('#FFF2CE', .35, 900); }, 450);
+      }
+    }
+  },
+  /* S14: tối sang sáng, lời cảm ơn, rồi tắt dần về đen khi bấm có chủ đích */
+  13: {
+    timers: [],
+    enter(dir, el){ this.leave(); Photos.end(); el.classList.remove('sinking'); $('#endfade').classList.remove('on'); },
+    step(s, dir, el){
+      if(s === 1 && dir > 0){ Fx.rays(1380, 380, {color:'#FFE9B0'}); Fx.flash('#FFF4D6', .4, 1600); }
+      el.classList.toggle('sinking', s >= 3);
+      $('#endfade').classList.toggle('on', s >= 3);
+      Dust.set(s < 3);
+    },
+    leave(){ this.timers.forEach(clearTimeout); this.timers = []; $('#endfade').classList.remove('on'); }
+  }
+};
+
+/* =====================================================================
+   11. DECK: slide, bước hiện ý, chuyển cảnh
+   ===================================================================== */
+const Deck = (() => {
+  const slides = $$('.slide');
+  const info = slides.map(el => ({ el, steps: Math.max(0, ...$$('[data-step]', el).map(e => +e.dataset.step)), title: el.dataset.title || '' }));
+  let idx = -1, step = 0, busy = false, queued = null, revealTimer = 0;
+  const BASE = ['.rv','.split','.fade','.draw','.cdot'].map(c => `${c}:not([data-step]):not([data-seq])`).join(',');
+
+  function reveal(el, s){
+    $$(BASE, el).forEach(e => e.classList.add('on'));
+    $$('[data-step]', el).forEach(e => {
+      const n = +e.dataset.step;
+      e.classList.toggle('on', n <= s);
+      if(e.dataset.out) e.classList.toggle('out', +e.dataset.out <= s);
+    });
+  }
+  function reset(el){ $$('.on,.out', el).forEach(e => e.classList.remove('on','out')); }
+
+  /* Các kiểu chuyển cảnh dùng Web Animations API */
+  function runTransition(type, inc, out, dir){
+    const D = CONFIG.transitionMs, E = 'cubic-bezier(.65,0,.35,1)', A = [];
+    const an = (el, kf, o) => A.push(el.animate(kf, Object.assign({easing:E, fill:'both'}, o)));
+    switch(type){
+      case 'iris':
+        an(inc, [{clipPath:'circle(0% at 50% 56%)'},{clipPath:'circle(150% at 50% 56%)'}], {duration:D+250});
+        an(out, [{opacity:1, transform:'scale(1)'},{opacity:0, transform:'scale(1.05)'}], {duration:D+250}); break;
+      case 'push':
+        an(inc, [{opacity:0, transform:`translate3d(${dir*140}px,0,0)`},{opacity:1, transform:'none'}], {duration:D});
+        an(out, [{opacity:1, transform:'none'},{opacity:0, transform:`translate3d(${-dir*90}px,0,0)`}], {duration:D}); break;
+      case 'zoom':
+        an(inc, [{opacity:0, transform:`scale(${dir>0?.88:1.12})`},{opacity:1, transform:'scale(1)'}], {duration:D+100});
+        an(out, [{opacity:1, transform:'scale(1)'},{opacity:0, transform:`scale(${dir>0?1.14:.88})`}], {duration:D+100}); break;
+      case 'wipe': {
+        const from = dir>0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)';
+        an(inc, [{clipPath:from},{clipPath:'inset(0 0 0 0)'}], {duration:D+100});
+        an(out, [{opacity:1},{opacity:.2}], {duration:D+100}); break; }
+      case 'light':
+        an(inc, [{opacity:0},{opacity:1}], {duration:1900});
+        an(out, [{opacity:1},{opacity:0}], {duration:1500}); break;
+      default:
+        an(inc, [{opacity:0},{opacity:1}], {duration:D}); an(out, [{opacity:1},{opacity:0}], {duration:D});
+    }
+    return Promise.all(A.map(a => a.finished)).then(() => ({ done(){ A.forEach(a => a.cancel()); } }));
+  }
+
+  async function go(n, o={}){
+    if(n < 0 || n >= slides.length || n === idx) return;
+    if(busy){ queued = n; return; }
+    busy = true;
+    const prev = idx, inc = slides[n], out = prev >= 0 ? slides[prev] : null, dir = n > prev ? 1 : -1;
+    // Video: rời slide thì pause ngay; vào slide thì phát ngay, không chờ hiệu ứng trang trí
+    if(prev === 9) Media.leave();
+    if(n === 9) Media.enter();
+    if(n === 8) { Media.prepare(); Media.loadStill(); }     // tải trước từ slide ngay trước video
+    if(n === 0) Photos.open();
+    if(n >= 11) Photos.end();
+    Ambient.apply(inc, n, slides.length);
+    if(prev < 0) Bg.snap();
+    reset(inc);
+    inc.classList.add('active'); inc.style.zIndex = 2;
+    const back = inc.dataset.backstep;
+    step = dir > 0 ? 0 : (back !== undefined ? +back : info[n].steps);
+    idx = n;
+    history.replaceState(null, '', '#' + (n+1));
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => { reveal(inc, step); const h = Hooks[n]; h && h.enter && h.enter(dir, inc); h && h.step && h.step(step, 0, inc); }, out ? 480 : (o.delay || 80));
+    Pres.refresh();
+    if(out && !o.instant){
+      out.style.zIndex = 1;
+      const t = await runTransition(inc.dataset.trans || 'fade', inc, out, dir);
+      out.classList.remove('active'); out.style.zIndex = ''; t.done(); reset(out);
+      const h = Hooks[prev]; if(h && h.leave) h.leave();
+    } else if(out){ out.classList.remove('active'); reset(out); const h = Hooks[prev]; if(h && h.leave) h.leave(); }
+    inc.style.zIndex = '';
+    busy = false;
+    if(queued !== null){ const q = queued; queued = null; go(q); }
+  }
+  function next(){
+    if(idx < 0) return go(0);
+    if(step < info[idx].steps){ step++; reveal(slides[idx], step); const h = Hooks[idx]; h && h.step && h.step(step, 1, slides[idx]); Pres.refresh(); }
+    else go(idx+1);
+  }
+  function prev(){
+    if(step > 0 && !busy){ step--; reveal(slides[idx], step); const h = Hooks[idx]; h && h.step && h.step(step, -1, slides[idx]); Pres.refresh(); }
+    else go(idx-1);
+  }
+  return { go, next, prev, count:()=>slides.length, index:()=>idx, step:()=>step, info:()=>info, busy:()=>busy };
+})();
+
+/* =====================================================================
+   12. NGƯỜI DẪN: cửa sổ ghi chú, đồng hồ
+   ===================================================================== */
+const Pres = (() => {
+  let win = null, t0 = null, noteOn = false;
+  const bar = $('#notebar');
+  const fmt = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  const HTML = `<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>Người dẫn · Ánh sáng sau vấp ngã</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
+    *{box-sizing:border-box}body{margin:0;background:#0A0E1F;color:#EEF0F7;font:20px/1.6 'Inter',system-ui,sans-serif;display:grid;grid-template-rows:auto 1fr auto;height:100vh}
+    header{display:flex;gap:24px;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid #26305A}
+    #pTitle{font:700 30px/1.2 'Inter',sans-serif}#pStep{color:#E4CB92;font-size:16px;letter-spacing:.2em;text-transform:uppercase}
+    #pTimer{font:700 54px/1 ui-monospace,monospace;color:#E4CB92}#pTimer.warn{color:#ffb347}#pTimer.over{color:#ff6b6b}
+    main{overflow:auto;padding:24px 28px;font-size:30px;line-height:1.6}main b{color:#E4CB92}
+    footer{display:flex;gap:18px;align-items:center;justify-content:space-between;padding:14px 28px;border-top:1px solid #26305A;font-size:16px;color:#aab2d3}
+    button{font:600 18px 'Inter',sans-serif;padding:12px 24px;border-radius:12px;border:1px solid #3a4780;background:#18204A;color:#fff;cursor:pointer}
+    #pMiss{color:#ffcf40}
+  </style></head><body>
+    <header><div><div id="pStep"></div><div id="pTitle"></div></div><div id="pTimer">00:00</div></header>
+    <main id="pNotes"></main>
+    <footer><div><button id="bPrev">← Lùi</button> <button id="bNext">Tiếp →</button> <button id="bReset">Đặt lại giờ</button></div><div id="pNext"></div><div id="pMiss"></div></footer>
+  </body></html>`;
+  function open(){
+    if(win && !win.closed){ win.focus(); return; }
+    win = window.open('', 'lif-presenter', 'width=1100,height=720');
+    if(!win){ alert('Trình duyệt đã chặn cửa sổ người dẫn. Hãy cho phép pop-up cho trang này rồi bấm P lại.'); return; }
+    win.document.open(); win.document.write(HTML); win.document.close();
+    win.document.addEventListener('keydown', onKey);
+    win.document.getElementById('bNext').onclick = () => Deck.next();
+    win.document.getElementById('bPrev').onclick = () => Deck.prev();
+    win.document.getElementById('bReset').onclick = reset;
+    refresh();
+  }
+  function reset(){ t0 = null; clock(); }
+  function refresh(){
+    const i = Deck.index(); if(i < 0) return;
+    const inf = Deck.info(), note = NOTES[i] || '';
+    const stepTxt = `Slide ${i+1}/${Deck.count()} · ý ${Deck.step()}/${inf[i].steps}`;
+    if(i > 0 && t0 === null) t0 = Date.now();
+    bar.innerHTML = `<b>${stepTxt} · ${inf[i].title}</b><br>${note}`;
+    if(win && !win.closed){
+      const d = win.document;
+      d.getElementById('pStep').textContent = stepTxt;
+      d.getElementById('pTitle').textContent = inf[i].title;
+      d.getElementById('pNotes').innerHTML = note;
+      d.getElementById('pNext').textContent = i+1 < inf.length ? 'Slide kế: ' + inf[i+1].title : 'Slide cuối';
+      d.getElementById('pMiss').textContent = Media.missing.length ? 'Thiếu tư liệu: ' + Media.missing.join(', ') : '';
+    }
+  }
+  function clock(){
+    const s = t0 ? Math.floor((Date.now()-t0)/1000) : 0, over = s > CONFIG.targetMinutes*60, warn = s > (CONFIG.targetMinutes-1)*60;
+    if(win && !win.closed){ const el = win.document.getElementById('pTimer'); el.textContent = fmt(s); el.className = over ? 'over' : warn ? 'warn' : ''; }
+  }
+  setInterval(clock, 500);
+  return { open, refresh, reset, toggleNotes(){ noteOn = !noteOn; bar.classList.toggle('on', noteOn); } };
+})();
+
+/* =====================================================================
+   13. ĐIỀU KHIỂN: bàn phím, chuột, cảm ứng. Lớp đen mở đầu chặn mọi thao tác cho đến lần bấm đầu tiên
+   ===================================================================== */
+const Intro = { done: false, locked: false };
+function onKey(e){
+  if(!Intro.done){
+    if(e.ctrlKey || e.metaKey || e.altKey || ['Shift','Control','Alt','Meta','Tab','CapsLock'].includes(e.key)) return;
+    e.preventDefault(); beginShow(); return;     // phím đầu tiên chỉ làm ánh sáng hiện lên, không nhảy slide
+  }
+  if(Intro.locked) return;
+  if(e.target && e.target.isContentEditable){ if(e.key === 'Escape') toggleEdit(false); return; }
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  const help = $('#help'), ov = $('#overview');
+  switch(e.key){
+    case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter': e.preventDefault(); Deck.next(); break;
+    case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace': e.preventDefault(); Deck.prev(); break;
+    case 'Home': Deck.go(0); break;
+    case 'End': Deck.go(Deck.count()-1); break;
+    case 'f': case 'F': document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(()=>{}); break;
+    case 'p': case 'P': Pres.open(); break;
+    case 'n': case 'N': Pres.toggleNotes(); break;
+    case 'l': case 'L': setLow(!CONFIG.lowFx); break;
+    case 'd': case 'D': document.body.classList.toggle('dev'); break;
+    case 'r': case 'R': Pres.reset(); break;
+    case 'e': case 'E': e.preventDefault(); toggleEdit(); break;
+    case 'h': case 'H': case '?': help.classList.toggle('on'); ov.classList.remove('on'); break;
+    case 'o': case 'O': ov.classList.toggle('on'); help.classList.remove('on'); break;
+    case 'Escape': help.classList.remove('on'); ov.classList.remove('on'); break;
+  }
+}
+function toggleEdit(force){
+  const on = force !== undefined ? force : !document.body.classList.contains('editing');
+  document.body.classList.toggle('editing', on);
+  $$('[data-editable]').forEach(el => { el.contentEditable = on ? 'true' : 'false'; });
+  if(on){
+    const el = $('[data-editable]'); el.focus();
+    const r = document.createRange(); r.selectNodeContents(el);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+}
+addEventListener('keydown', onKey);
+document.addEventListener('click', e => {
+  if(!Intro.done){ beginShow(); return; }
+  if(Intro.locked) return;
+  if(!e.target.closest('#stage')) return;
+  if(e.target.closest('#help,#overview,[contenteditable=true]')) return;
+  Deck.next();
+});
+let tx = null;
+addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+addEventListener('touchend', e => { if(tx === null || !Intro.done || Intro.locked) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if(Math.abs(dx) > 50) dx < 0 ? Deck.next() : Deck.prev(); }, {passive:true});
+
+/* Danh sách slide (phím O) */
+$('#ovGrid').innerHTML = Deck.info().map((s,i) => `<button data-i="${i}"><b>${String(i+1).padStart(2,'0')}</b>${s.title}</button>`).join('');
+$('#ovGrid').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; $('#overview').classList.remove('on'); Deck.go(+b.dataset.i); e.stopPropagation(); });
+
+/* =====================================================================
+   14. KHỞI ĐỘNG: màn hình đen tuyệt đối, lần bấm đầu tiên làm ánh sáng hiện lên
+   ===================================================================== */
+if(CONFIG.lowFx) document.body.classList.add('lowfx');
+syncLowStatus();
+if(/[?&]dev/.test(location.search)) document.body.classList.add('dev');
+if(CONFIG.media.openTextSide === 'right') $('.s1').classList.add('right');
+if(CONFIG.media.endTextSide === 'right') $('.s14').classList.add('right');
+$('#creditOpen').textContent = CONFIG.media.credit; $('#creditEnd').textContent = CONFIG.media.credit;
+Bg.start(); Fx.resize(); Trail.init(Deck.count());
+Photos.open();                                    // tải ảnh mở đầu sẵn trong lúc màn hình còn đen
+Words.set([]);
+
+const hint = $('#hint'), black = $('#blackout');
+function beginShow(startIdx = 0){
+  if(Intro.done) return;
+  Intro.done = true; Intro.locked = true;
+  black.classList.add('gone');                    // lớp đen mờ dần, ánh sáng hiện lên
+  setTimeout(() => { Deck.go(startIdx, {delay: 200}); }, startIdx ? 0 : 450);
+  setTimeout(() => { Intro.locked = false; }, startIdx ? 200 : 1700);   // chặn bấm liên tiếp làm nhảy mất slide 1
+  setTimeout(() => hint.classList.add('on'), 5200);
+  setTimeout(() => hint.classList.remove('on'), 11000);
+  black.addEventListener('transitionend', () => black.remove(), {once:true});
+  setTimeout(() => black.remove(), 3500);
+}
+const hashN = parseInt(location.hash.slice(1)) || 0;
+if(hashN > 1 || /[?&]skip/.test(location.search)){
+  black.style.transition = 'none'; black.remove(); Intro.done = true;
+  Deck.go(Math.max(0, Math.min(Deck.count()-1, (hashN || 1) - 1)), {instant:true});
+}
+if('requestIdleCallback' in window) requestIdleCallback(() => Media.loadStill()); else setTimeout(Media.loadStill, 2500);
+window.__deck = Deck; window.__media = Media; window.__intro = Intro; window.__config = CONFIG;
+
+</script>
+</body>
+</html>

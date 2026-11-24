@@ -1,0 +1,292 @@
+<!-- Biểu tượng và dải màu dùng chung (SVG sprite). Nét chuyển sắc theo toạ độ người dùng nên mọi icon cùng một hệ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gGold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#FFE9B0"/><stop offset="1" stop-color="#E0A64A"/></linearGradient>
+    <linearGradient id="gSky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#9FD0FF"/><stop offset="1" stop-color="#4C7BFF"/></linearGradient>
+    <linearGradient id="gMint" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#B4F5EC"/><stop offset="1" stop-color="#2BC7B4"/></linearGradient>
+    <linearGradient id="gViolet" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#D3C4FF"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient>
+    <linearGradient id="gH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1920" y2="0"><stop offset="0" stop-color="#6FB4FF"/><stop offset=".5" stop-color="#BBA6FF"/><stop offset="1" stop-color="#F2D58E"/></linearGradient>
+    <linearGradient id="gHd" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1920" y2="0"><stop offset="0" stop-color="#2450E6"/><stop offset=".55" stop-color="#7A4FE0"/><stop offset="1" stop-color="#C9861F"/></linearGradient>
+    <linearGradient id="gV" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1080"><stop offset="0" stop-color="#9FD0FF" stop-opacity="0"/><stop offset=".5" stop-color="#C8D6FF"/><stop offset="1" stop-color="#F2D58E" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gTrail" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="1860" y2="0"><stop offset="0" stop-color="#6FB4FF"/><stop offset=".6" stop-color="#BBA6FF"/><stop offset="1" stop-color="#F2D58E"/></linearGradient>
+    <radialGradient id="gHalo"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0"/></filter>
+
+    <!-- Bộ icon: viewBox 48, nét 2.6px, một mảng khối mờ phía sau cho chiều sâu -->
+    <symbol id="i-raise" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="20"/><circle class="s" cx="24" cy="24" r="20"/><path class="s" d="M24 34V14M15 22.5l9-9 9 9"/></symbol>
+    <symbol id="i-link" viewBox="0 0 48 48"><path class="f" d="M20 12h-4a10 10 0 0 0 0 20h4zM28 36h4a10 10 0 0 0 0-20h-4z"/><path class="s" d="M21 14h-5a9 9 0 0 0 0 18h5M27 34h5a9 9 0 0 0 0-18h-5M17 24h14"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="20"/><circle class="s" cx="24" cy="24" r="20"/><path class="f" d="M32 16l-5.5 10.5L16 32l5.5-10.5z"/><path class="s" d="M32 16l-5.5 10.5L16 32l5.5-10.5z"/><circle class="d" cx="24" cy="24" r="2"/><path class="s" d="M24 4v4M24 40v4M4 24h4M40 24h4"/></symbol>
+    <symbol id="i-target" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="18"/><circle class="s" cx="24" cy="24" r="18"/><circle class="s" cx="24" cy="24" r="10"/><circle class="d" cx="24" cy="24" r="3.4"/><path class="s" d="M33 15l9-9M37 6h5v5"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><path class="f" d="M24 6L44 40H4z"/><path class="s" d="M24 6L44 40H4z"/><path class="s" d="M24 18v11"/><circle class="d" cx="24" cy="34.5" r="2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 48 48"><path class="s" d="M15 15l18 18M33 15L15 33"/></symbol>
+    <symbol id="i-check" viewBox="0 0 48 48"><path class="s" d="M12 25l8 8 16-18"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><path class="f" d="M24 5a13 13 0 0 0-7 24v5h14v-5a13 13 0 0 0-7-24z"/><path class="s" d="M24 5a13 13 0 0 0-7 24v5h14v-5a13 13 0 0 0-7-24z"/><path class="s" d="M18 40h12M20.5 44h7M19 26l5-5 5 5M24 21v13"/></symbol>
+    <symbol id="i-lens" viewBox="0 0 48 48"><path class="f" d="M3 24s8-13 21-13 21 13 21 13-8 13-21 13S3 24 3 24z"/><path class="s" d="M3 24s8-13 21-13 21 13 21 13-8 13-21 13S3 24 3 24z"/><circle class="s" cx="24" cy="24" r="6.5"/><circle class="d" cx="24" cy="24" r="2.4"/></symbol>
+    <symbol id="i-step" viewBox="0 0 48 48"><path class="f" d="M6 40h10V30h10V20h10V10h6v30z"/><path class="s" d="M6 40h10V30h10V20h10V10h6"/><path class="s" d="M30 8l8-2-2 8"/></symbol>
+    <symbol id="i-loop" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="14"/><path class="s" d="M38 24a14 14 0 1 1-4.2-10M38 7v8h-8"/></symbol>
+  </defs>
+</svg>
+
+<div id="viewport">
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <svg id="noise" width="1920" height="1080" aria-hidden="true"><rect width="1920" height="1080" filter="url(#grain)"/></svg>
+  <div id="words" aria-hidden="true"></div>
+  <svg id="trail" viewBox="0 0 1920 1080" aria-hidden="true"><path id="trailBase" class="base" d="M60 1030 C 330 1002 520 1056 800 1030 S 1340 998 1560 1030 S 1780 1050 1860 1030"/><path id="trailProg" class="prog" d="M60 1030 C 330 1002 520 1056 800 1030 S 1340 998 1560 1030 S 1780 1050 1860 1030" pathLength="1000" stroke-dasharray="0 1000"/><g id="trailTicks"></g><circle id="trailHalo" class="halo" r="16" cx="60" cy="1030"/><circle id="trailOrb" class="orb" r="5" cx="60" cy="1030"/></svg>
+  <div id="hud" aria-hidden="true"></div>
+
+  <div id="slides">
+
+<!-- ================= 01. MỞ ĐẦU ================= -->
+<section class="slide s1" data-title="Mở đầu" data-theme="night" data-trans="light" data-intensity="0" data-dust="1" data-trail="0" data-words="BÓNG TỐI,E NGẠI,DO DỰ,IM LẶNG,THẤT BẠI">
+  <div class="cam">
+    <div class="scene">
+      <img class="photo" id="imgOpen" alt="" decoding="async">
+      <div class="g1"></div><div class="g2"></div><div class="cone"></div>
+      <div class="mist m1"></div><div class="mist m2"></div><div class="vig"></div>
+    </div>
+  </div>
+  <div class="open-text">
+    <div class="kick rv" style="--d:.5s">Nhóm 2 · Ngữ văn 10</div>
+    <h1 class="otitle"><span class="split" style="--d:.7s">ÁNH SÁNG</span><span class="split l2" style="--d:1s">SAU VẤP NGÃ</span></h1>
+    <div class="osub rv" style="--d:1.9s">Thất bại là điều đáng xấu hổ?</div>
+  </div>
+  <div class="credit" id="creditOpen"></div>
+</section>
+
+<!-- ================= 02. THÀNH VIÊN ================= -->
+<section class="slide s2" data-title="Những thành viên của nhóm 2" data-theme="midnight" data-trans="fade" data-trail="0" data-words="NHÓM 2,CÙNG NHAU,ĐỒNG HÀNH,HỢP TÁC">
+  <div class="head">
+    <div class="kick rv">Nhóm 2 · Ngữ văn 10</div>
+    <div class="t-3 split" style="--d:.15s">NHỮNG THÀNH VIÊN<br>CỦA NHÓM 2</div>
+  </div>
+  <div class="tag rv" style="--d:.5s">Cùng đồng hành trong bài thuyết trình hôm nay.</div>
+  <svg class="const" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s" d="M980 406L1140 496L980 586L1140 676L980 766L1140 856L980 946" stroke="rgba(143,184,255,.16)" style="stroke-width:2px"/>
+    <path class="s draw glowl" data-seq="2" pathLength="1" d="M980 406L1140 496" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="3" pathLength="1" d="M1140 496L980 586" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="4" pathLength="1" d="M980 586L1140 676" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="5" pathLength="1" d="M1140 676L980 766" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="6" pathLength="1" d="M980 766L1140 856" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-seq="7" pathLength="1" d="M1140 856L980 946" stroke="url(#gH)" style="stroke-width:3px"/>
+    <path id="memPulse" class="s pulse glowl warm" pathLength="1000" d="M980 406L1140 496L980 586L1140 676L980 766L1140 856L980 946" stroke="#FFE3A3" style="stroke-width:4px;opacity:0;transition:opacity 1s"/>
+    <g fill="#EBD7A4">
+      <circle class="cdot glowl warm" data-seq="1" cx="980" cy="406" r="11"/><circle class="cdot glowl warm" data-seq="2" cx="1140" cy="496" r="11"/>
+      <circle class="cdot glowl warm" data-seq="3" cx="980" cy="586" r="11"/><circle class="cdot glowl warm" data-seq="4" cx="1140" cy="676" r="11"/>
+      <circle class="cdot glowl warm" data-seq="5" cx="980" cy="766" r="11"/><circle class="cdot glowl warm" data-seq="6" cx="1140" cy="856" r="11"/>
+      <circle class="cdot glowl warm" data-seq="7" cx="980" cy="946" r="11"/>
+    </g>
+  </svg>
+  <div class="mem c" data-seq="1" style="right:1000px;top:360px;text-align:right;transform-origin:100% 50%">Huy Tín</div>
+  <div class="mem a" data-seq="2" style="left:1190px;top:450px">Bảo Trân</div>
+  <div class="mem f" data-seq="3" style="right:1000px;top:540px;text-align:right">Thanh Trúc</div>
+  <div class="mem d" data-seq="4" style="left:1190px;top:630px">Minh Trường</div>
+  <div class="mem g" data-seq="5" style="right:1000px;top:720px;text-align:right">Minh Trí</div>
+  <div class="mem e" data-seq="6" style="left:1190px;top:810px">Ngọc Trâm</div>
+  <div class="mem b" data-seq="7" style="right:1000px;top:900px;text-align:right">Minh Tiến</div>
+</section>
+
+<!-- ================= 03. CÂU HỎI MỞ ĐẦU ================= -->
+<section class="slide s3" data-title="Câu hỏi mở đầu" data-theme="graphite" data-trans="push" data-words="SỢ SAI,DO DỰ,E NGẠI,CHÙN BƯỚC">
+  <div class="bigq rv z" aria-hidden="true">?</div>
+  <div class="kick rv abs" style="left:120px;top:150px">Câu hỏi mở đầu</div>
+  <div class="q t-1 split">Bạn đã bao giờ vì sợ sai mà <em>không dám thử</em> sức?</div>
+  <svg class="askline" viewBox="0 0 640 4" aria-hidden="true"><path class="s draw glowl" data-step="1" pathLength="1" d="M0 2H640" stroke="url(#gH)" style="stroke-width:4px"/></svg>
+  <div class="ask rv" data-step="1"><svg class="ico g-gold glow"><use href="#i-raise"/></svg><span>Nếu có, hãy giơ tay</span></div>
+</section>
+
+<!-- ================= 04. QUAN NIỆM ================= -->
+<section class="slide s4" data-title="Quan niệm cần xem lại" data-theme="violet" data-trans="zoom" data-words="XẤU HỔ,ĐỊNH KIẾN,ĐÚNG HAY SAI,QUAN NIỆM">
+  <div class="qm rv z" aria-hidden="true">“</div>
+  <div class="kick rv abs" style="left:120px;top:150px">Quan niệm cần xem lại</div>
+  <div class="stm t-xl split">Thất bại là điều<br><em>đáng xấu hổ</em>”</div>
+  <svg class="rule" viewBox="0 0 1680 4" aria-hidden="true"><path class="s draw glowl" data-step="1" pathLength="1" d="M0 2H1680" stroke="url(#gH)" style="stroke-width:4px"/></svg>
+  <div class="qa q1 rv" data-step="1"><small>CÂU HỎI 1</small>Đúng hay sai?</div>
+  <svg class="vl" viewBox="0 0 4 200" aria-hidden="true"><path class="s draw" data-step="2" pathLength="1" d="M2 0V200" stroke="url(#gV)" style="stroke-width:4px"/></svg>
+  <div class="qa q2 rv" data-step="2" style="width:840px"><small>CÂU HỎI 2</small>Có nên bỏ nó đi không?</div>
+</section>
+
+<!-- ================= 05. KHÁI NIỆM (nền sáng) ================= -->
+<section class="slide s5" data-title="Thất bại và xấu hổ" data-theme="paper" data-trans="wipe" data-words="THẤT BẠI,XẤU HỔ,KHÁI NIỆM">
+  <div class="kick rv abs" style="left:120px;top:110px">Hai khái niệm</div>
+  <div class="col c1"><div class="kick rv" style="color:var(--mute);margin-top:80px">Khái niệm 1</div><div class="t-1 split">Thất bại</div><p class="lead rv" style="--d:.3s">Khi ta không đạt được mục tiêu hay kỳ vọng.</p></div>
+  <svg class="ico g-ink link rv" data-step="1" style="color:#2450E6"><use href="#i-link"/></svg>
+  <div class="col c2 rv" data-step="1"><div class="kick" style="color:var(--mute);margin-top:80px">Khái niệm 2</div><div class="t-1" style="margin:20px 0 28px;color:var(--acc)">Xấu hổ</div><p class="lead">Cảm giác tiêu cực khi mắc sai lầm hoặc không đạt điều mình mong muốn.</p></div>
+  <div class="eg rv" data-step="2">
+    <div class="kick">Trong học tập, điều đó hiện ra như thế này</div>
+    <div class="row3">
+      <div class="it"><span>01</span>Không dám tham gia thi học sinh giỏi</div>
+      <div class="it"><span>02</span>Biết đáp án vẫn không dám phát biểu</div>
+      <div class="it"><span>03</span>Ngại nêu ý kiến riêng vì sợ sai, sợ bị đánh giá</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06. GỐC RỄ ================= -->
+<section class="slide s6" data-title="Gốc rễ của quan niệm" data-theme="navy" data-trans="push" data-words="NỖI SỢ,CAN ĐẢM,GỐC RỄ,VÙNG AN TOÀN">
+  <div class="kick rv abs" style="left:120px;top:90px">Hai nguyên nhân</div>
+  <div class="t-2 split abs" style="left:120px;top:128px;width:1300px">Gốc rễ của <em>quan niệm</em> này</div>
+  <svg class="ico g-sky glow compass rv z" aria-hidden="true"><use href="#i-compass"/></svg>
+  <svg class="vl rv" viewBox="0 0 4 640" aria-hidden="true"><path class="s draw" data-step="1" pathLength="1" d="M2 0V640" stroke="url(#gV)" style="stroke-width:4px"/></svg>
+  <div class="num n1 rv l" data-step="1">01</div>
+  <div class="txt t1 rv" data-step="1"><div class="t-2">Nỗi sợ thất bại</div><p class="body">Ta nghĩ mình không đủ năng lực, không đủ giỏi, không đủ cố gắng, nên không dám thử sức, nhất là với những điều nằm ngoài vùng an toàn.</p></div>
+  <div class="num n2 rv r" data-step="2">02</div>
+  <div class="txt t2 rv" data-step="2"><div class="t-2">Thiếu can đảm và lười biếng</div><p class="body">Năng lực thì đủ, nhưng ta trì hoãn: biết mình cần cố gắng, biết mình phải thay đổi mà vẫn chọn cách dễ dàng và an toàn hơn.</p></div>
+</section>
+
+<!-- ================= 07. TÁC HẠI ================= -->
+<section class="slide s7" data-title="Tác hại của quan niệm" data-theme="graphite" data-trans="wipe" data-words="MẤT NIỀM TIN,BỎ LỠ,NGẠI NGẦN,CHÙN BƯỚC">
+  <div class="kick rv abs" style="left:120px;top:90px">Tác hại</div>
+  <div class="t-1 split abs" style="left:120px;top:128px;width:1500px">Điều ta <em>đánh mất</em></div>
+  <svg class="st" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M100 420H660" stroke="url(#gH)" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M660 420V580H1280" stroke="url(#gH)" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="3" pathLength="1" d="M1280 580V740H1840" stroke="url(#gH)" style="stroke-width:4px"/>
+    <circle class="gd glowl warm" data-step="1" cx="660" cy="420" r="10" fill="#EBD7A4"/><circle class="gd glowl warm" data-step="2" cx="1280" cy="580" r="10" fill="#EBD7A4"/><circle class="gd glowl warm" data-step="3" cx="1840" cy="740" r="10" fill="#EBD7A4"/>
+  </svg>
+  <div class="blk b1 rv" data-step="1"><div class="kick">Bậc 1</div><div class="t-3">Niềm tin vào bản thân</div><p class="body">Ta luôn nhìn năng lực của mình một cách tiêu cực và không dám khẳng định giá trị của chính mình.</p></div>
+  <div class="blk b2 rv" data-step="2"><div class="kick">Bậc 2</div><div class="t-3">Cơ hội học hỏi</div><p class="body">Ta bỏ lỡ cơ hội trải nghiệm và phát triển, phụ thuộc vào đánh giá của người khác, không dám theo đuổi mục tiêu lớn hơn.</p></div>
+  <div class="blk b3 rv" data-step="3"><div class="kick">Bậc 3</div><div class="t-3">Sự tiến bộ</div><p class="body">Ta chỉ chọn việc chắc chắn thành công, thiếu trải nghiệm, không học được từ sai lầm và ngày càng khó tiến bộ.</p></div>
+</section>
+
+<!-- ================= 08. CHUYỂN BIẾN: XẤU HỔ -> HỌC HỎI ================= -->
+<section class="slide s8" data-title="Từ xấu hổ đến học hỏi" data-theme="cobalt" data-trans="iris" data-words="HỌC HỎI,BẢN LĨNH,TRƯỞNG THÀNH,NỖ LỰC,CAN ĐẢM">
+  <div class="moment"><div class="word" id="shame" aria-label="Xấu hổ"></div><div class="word" id="learn">HỌC HỎI</div></div>
+  <div class="sub rv" style="--d:.6s">Khi không còn sợ thất bại</div>
+  <svg class="st" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M100 704H660" stroke="#fff" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M660 704V544H1280" stroke="#fff" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="3" pathLength="1" d="M1280 544V384H1840" stroke="#fff" style="stroke-width:4px"/>
+    <circle class="gd glowl warm" data-step="1" cx="660" cy="704" r="10" fill="#FFE3A3"/><circle class="gd glowl warm" data-step="2" cx="1280" cy="544" r="10" fill="#FFE3A3"/><circle class="gd glowl warm" data-step="3" cx="1840" cy="384" r="10" fill="#FFE3A3"/>
+  </svg>
+  <div class="blk b1 rv" data-step="1"><div class="kick">Bước 1</div><div class="t-3">Bước ra khỏi vùng an toàn</div><p class="body">Ta mạnh dạn thử sức với điều mới và nắm bắt cơ hội.</p></div>
+  <div class="blk b2 rv" data-step="2"><div class="kick">Bước 2</div><div class="t-3">Nhận phản hồi thực tế</div><p class="body">Thất bại chỉ ra lỗ hổng để ta rút kinh nghiệm và điều chỉnh phương pháp hiệu quả hơn.</p></div>
+  <div class="blk b3 rv" data-step="3"><div class="kick">Bước 3</div><div class="t-3">Rèn bản lĩnh vượt khó</div><p class="body">Ta giữ được bình tĩnh trước nghịch cảnh, coi thất bại là bài học để chủ động sửa sai thay vì chùn bước.</p></div>
+</section>
+
+<!-- ================= 09. HAI KIỂU SAI ================= -->
+<section class="slide s9" data-title="Hai kiểu sai" data-theme="teal" data-trans="wipe" data-intensity="0" data-trail="0" data-words="">
+  <div class="half l"><div class="in">
+    <svg class="ico g-mint glow rv" style="--d:.3s"><use href="#i-target"/></svg>
+    <div class="kick rv" style="--d:.4s">Kiểu thứ nhất</div>
+    <div class="t-2 split" style="--d:.5s">Thất bại khi cố gắng</div>
+    <ul class="rv" style="--d:.8s"><li>Trong quá trình cố gắng</li><li>Trong học hỏi</li><li>Trong thử nghiệm</li></ul>
+  </div></div>
+  <div class="half r"><div class="in rv r" data-step="1">
+    <svg class="ico g-gold glow"><use href="#i-warn"/></svg>
+    <div class="kick" style="color:#F2CB7E">Kiểu thứ hai</div>
+    <div class="t-2">Sai lầm do thiếu trách nhiệm</div>
+    <ul><li>Không chịu nhận lỗi</li><li>Không chịu sửa chữa</li></ul>
+  </div></div>
+  <svg class="dv" viewBox="0 0 4 1080" preserveAspectRatio="none" aria-hidden="true"><path class="s draw glowl" pathLength="1" d="M2 0V1080" stroke="url(#gV)" style="stroke-width:4px;--d:.2s"/></svg>
+  <div class="foot rv" data-step="2">Sai có thể gây hậu quả nên cần nghiêm túc.</div>
+</section>
+
+<!-- ================= 10. SPACEX / FALCON 1 ================= -->
+<section class="slide s10" data-title="Dẫn chứng: Falcon 1" data-theme="navy" data-trans="zoom" data-intensity="0" data-trail="0" data-words="">
+  <div class="media">
+    <div class="fallback"></div>
+    <img class="still" id="still" alt="Falcon 1 Flight 4 (tư liệu dự phòng)" decoding="async">
+    <video id="vid" muted playsinline preload="none" disablepictureinpicture></video>
+    <div class="shade"></div><div class="shade2"></div>
+  </div>
+  <div class="devbadge" id="mediaBadge"></div>
+  <div class="head"><div class="kick rv">Dẫn chứng · Falcon 1</div><div class="t-1 split" style="--d:.2s">Ba lần thất bại.<br>Lần thứ tư <em>thành công</em>.</div></div>
+  <svg class="tl" viewBox="0 0 1920 1080" aria-hidden="true">
+    <path class="s" d="M360 620H1620" stroke="rgba(255,255,255,.22)" style="stroke-width:3px"/>
+    <path class="s draw glowl" data-step="1" pathLength="1" d="M360 620H780" stroke="#9FB4E6" style="stroke-width:4px"/>
+    <path class="s draw glowl" data-step="2" pathLength="1" d="M780 620H1200" stroke="#9FB4E6" style="stroke-width:4px"/>
+    <path class="s draw glowl warm" data-step="3" pathLength="1" d="M1200 620H1620" stroke="url(#gH)" style="stroke-width:5px"/>
+  </svg>
+  <div class="nd rv z" data-step="1" style="left:360px"><div class="date">3/2006</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd rv z" data-step="2" style="left:780px"><div class="date">3/2007</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd rv z" data-step="3" style="left:1200px"><div class="date">8/2008</div><div class="dot"><svg class="ico s"><use href="#i-x"/></svg></div><div class="lab">Thất bại</div></div>
+  <div class="nd ok rv z" data-step="4" id="nodeOk" style="left:1620px"><div class="date">28/9/2008</div><div class="dot"><svg class="ico s"><use href="#i-check"/></svg></div><div class="lab">Thành công</div></div>
+  <div class="team rv" data-step="5">Thành quả của <em>cả đội ngũ</em> SpaceX.</div>
+  <div class="cav rv" data-step="6">Thất bại không tự dẫn đến thành công. Điều đáng học là sự nhìn lại, sửa và thử tiếp.</div>
+  <div class="vcap">Hình ảnh phóng minh họa: tên lửa Falcon 9 (NASA SVS, SpaceX IMAP). Không phải Falcon 1.</div>
+</section>
+
+<!-- ================= 11. HỎI LỚP ================= -->
+<section class="slide s11" data-title="Hỏi lớp" data-theme="midnight" data-trans="iris" data-words="CÂU HỎI,CHIA SẺ,LẮNG NGHE,Ý KIẾN">
+  <div class="kick rv abs" style="left:120px;top:150px">Hỏi lớp</div>
+  <div class="q t-1 split">Theo các bạn, khi nào mắc sai lầm <em>thực sự</em> đáng xấu hổ?</div>
+  <div class="hint rv" data-step="1">Mời một hai bạn chia sẻ.</div>
+  <svg class="ico g-gold bulb glow rv z" style="--d:.5s;--gl:rgba(255,215,130,.6)" aria-hidden="true"><use href="#i-bulb"/></svg>
+</section>
+
+<!-- ================= 12. TỔNG KẾT (nền sáng) ================= -->
+<section class="slide s12" data-title="Tổng kết" data-theme="champagne" data-trans="push" data-words="NHẬN SAI,LÀM LẠI,TIẾN BỘ,NGHIÊM TÚC">
+  <div class="kick rv abs" style="left:120px;top:110px">Tổng kết</div>
+  <div class="t-1 split abs" style="left:120px;top:150px;width:1500px">Nhóm xin gom lại <em>ba điều</em></div>
+  <div class="rows">
+    <div class="row rv" data-step="1"><div class="no">01</div><div class="tx">Sai có thể gây hậu quả nên cần nghiêm túc.</div></div>
+    <div class="row rv" data-step="2"><div class="no">02</div><div class="tx">Sai một lần không có nghĩa là mình kém.</div></div>
+    <div class="row rv" data-step="3"><div class="no">03</div><div class="tx">Quan trọng là nhận sai, tìm ra sai ở đâu rồi làm lại.</div></div>
+    <div class="slot" data-editable contenteditable="false" spellcheck="false">Ý của lớp: nhấn vào đây để nhập</div>
+  </div>
+</section>
+
+<!-- ================= 13. GIẢI PHÁP (nền sáng ấm) ================= -->
+<section class="slide s13" data-title="Giải pháp" data-theme="amber" data-trans="light" data-words="HY VỌNG,KIÊN TRÌ,DÁM THỬ,TRƯỞNG THÀNH">
+  <div class="kick rv abs" style="left:120px;top:110px">Giải pháp</div>
+  <div class="t-1 split abs" style="left:120px;top:150px;width:1500px">Ba việc <em>làm được ngay</em></div>
+  <svg class="pth" viewBox="0 0 1920 1080" aria-hidden="true"><path class="s draw glowl warm" data-step="1" pathLength="1" d="M130 610 C 230 610 250 560 330 560 S 800 450 960 450 S 1440 340 1590 340 L 1880 300" stroke="url(#gHd)" style="stroke-width:5px;--d:.2s"/></svg>
+  <div class="med m1 rv z" data-step="1"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-lens"/></svg></div>
+  <div class="sol s1b rv" data-step="1"><div class="t-3">Thay đổi góc nhìn</div><p class="body">Xem thất bại là một phần của quá trình học hỏi và trưởng thành, giúp ta rút kinh nghiệm.</p></div>
+  <div class="med m2 rv z" data-step="2"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-step"/></svg></div>
+  <div class="sol s2b rv" data-step="2"><div class="t-3">Dám thử sức</div><p class="body">Mạnh dạn bước ra khỏi vùng an toàn, đối mặt với khó khăn và thử thách.</p></div>
+  <div class="med m3 rv z" data-step="3"><svg class="ico g-ink" style="color:#B4560E"><use href="#i-loop"/></svg></div>
+  <div class="sol s3b rv" data-step="3"><div class="t-3">Học hỏi và kiên trì</div><p class="body">Rút bài học từ mỗi lần vấp ngã, sửa chữa sai lầm và không ngừng cố gắng tiến về phía trước.</p></div>
+</section>
+
+<!-- ================= 14. KẾT ================= -->
+<section class="slide s14" data-title="Lời kết" data-theme="dawn" data-trans="light" data-intensity="0" data-dust="1" data-trail="0" data-backstep="2" data-words="ÁNH SÁNG,HY VỌNG,TRƯỞNG THÀNH,BẢN LĨNH">
+  <div class="cam">
+    <div class="scene">
+      <img class="photo" id="imgEnd" alt="" decoding="async">
+      <div class="dark" data-step="1"></div>
+      <div class="warm" data-step="1"></div>
+      <div class="ray r1" data-step="1"></div><div class="ray r2" data-step="1"></div><div class="ray r3" data-step="1"></div>
+      <div class="fog"></div><div class="sideg"></div><div class="vig2"></div>
+    </div>
+  </div>
+  <div class="end-text">
+    <div class="e-q rv" data-step="0" data-out="1" id="endQ">Ngay cả những phát minh vĩ đại cũng hiếm khi thành công ngay từ lần đầu. Vậy mà chúng ta mới thất bại một lần đã muốn bỏ cuộc rồi sao?</div>
+    <div class="e-m">
+      <svg class="spark" viewBox="0 0 520 8" aria-hidden="true"><path class="s draw glowl warm" data-step="1" pathLength="1" d="M0 4H520" stroke="url(#gH)" style="stroke-width:6px"/></svg>
+      <div class="t-xl split" data-step="1">Thất bại không đáng xấu hổ.</div>
+      <div class="t-2 rv" data-step="1" style="--d:.9s">Sai mà dám nhìn lại, sửa rồi thử tiếp mới là điều đáng nể.</div>
+    </div>
+    <div class="e-t rv" data-step="2">Nhóm 2 xin cảm ơn cô và các bạn đã lắng nghe</div>
+  </div>
+  <div data-step="3" hidden aria-hidden="true"></div><!-- bước 3: tắt dần về màn hình đen -->
+  <div class="credit" id="creditEnd"></div>
+</section>
+
+  </div>
+
+  <div id="flash"></div>
+  <canvas id="dust"></canvas>
+  <canvas id="fx"></canvas>
+  <div id="endfade"></div>
+  <div id="hint">Bấm → hoặc nhấp chuột để tiếp tục · H xem phím tắt</div>
+
+  <div id="help"><h2>Phím tắt</h2><dl>
+    <dt>→ ↓ Space Enter</dt><dd>Hiện ý kế tiếp hoặc sang slide sau</dd>
+    <dt>← ↑ Backspace</dt><dd>Lùi một ý hoặc về slide trước</dd>
+    <dt>Home / End</dt><dd>Về slide đầu / slide cuối</dd>
+    <dt>O</dt><dd>Danh sách slide</dd>
+    <dt>P</dt><dd>Cửa sổ người dẫn (ghi chú, đồng hồ)</dd>
+    <dt>N</dt><dd>Hiện ghi chú ngay trên màn hình</dd>
+    <dt>E</dt><dd>Gõ ý của lớp lên slide Tổng kết (Esc để xong)</dd>
+    <dt>L</dt><dd>Bật hoặc tắt chế độ giảm hiệu ứng · Hiện tại: <span class="lowfx-status" id="lowFxStatus" aria-live="polite">Đang tắt</span></dd>
+    <dt>F</dt><dd>Toàn màn hình</dd>
+    <dt>D</dt><dd>Hiện thông báo thiếu tư liệu</dd>
+    <dt>R</dt><dd>Đặt lại đồng hồ</dd>
+  </dl></div>
+  <div id="overview"><h2>Danh sách slide</h2><div class="grid" id="ovGrid"></div></div>
+</div>
+</div>
+<div id="notebar"></div>
+<div id="blackout" aria-hidden="true"></div>
