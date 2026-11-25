@@ -1636,5 +1636,35 @@ window.__deck = Deck; window.__media = Media; window.__intro = Intro; window.__c
   setInterval(function(){ var i = Deck.index(); if(i >= 0 && counter) counter.textContent = String(i+1).padStart(2,'0') + ' / ' + String(Deck.count()).padStart(2,'0'); }, 400);
 })();
 </script>
+<script id="post-video">
+/* THÊM MỚI: khi video kết thúc ở slide 10, chuyển mượt sang ảnh thật Falcon 1 Flight 4,
+   thêm ánh sáng bùng nhẹ ở mốc "Thành công". Không sửa code cũ. */
+(function(){
+  try{
+    var vid = document.getElementById('vid'), sl = document.querySelector('.s10'), cap = sl && sl.querySelector('.vcap'), still = document.getElementById('still');
+    if(!vid || !sl) return;
+    var st = document.createElement('style');
+    st.textContent =
+      '.s10 .media video{transition:opacity 1.6s ease}' +
+      '.s10.post .media video{opacity:0!important}' +
+      '.s10.post .media img.still.ok{opacity:.62!important;animation:slowZoom 40s ease-out forwards!important}' +
+      '.s10.post .media .fallback{animation:postGlow 5s ease-in-out infinite alternate}' +
+      '@keyframes postGlow{from{filter:brightness(1)}to{filter:brightness(1.7)}}' +
+      '.s10.post #nodeOk .dot{animation:okPulse 2.6s ease-in-out infinite}' +
+      '@keyframes okPulse{0%,100%{box-shadow:0 0 0 14px rgba(235,215,164,.2),0 0 60px rgba(235,215,164,.55)}50%{box-shadow:0 0 0 30px rgba(235,215,164,.08),0 0 120px rgba(235,215,164,.9)}}' +
+      '.s10.post .tl .warm{filter:drop-shadow(0 0 14px rgba(235,215,164,.9))}';
+    document.head.appendChild(st);
+    var capOld = cap ? cap.textContent : '';
+    function post(){
+      sl.classList.add('post');
+      if(cap && still && still.classList.contains('ok')) cap.textContent = 'Ảnh tư liệu: Falcon 1 Flight 4, 28/9/2008 (Wikimedia Commons).';
+      try{ if(typeof Fx !== 'undefined'){ Fx.shock(1620, 620, {color:'#EBD7A4', max:800}); Fx.burst(1620, 620, {n:90, colors:['#EBD7A4','#FFFFFF','#8DBBFF'], power:1, up:120}); } }catch(e){}
+    }
+    function reset(){ sl.classList.remove('post'); if(cap) cap.textContent = capOld; }
+    vid.addEventListener('ended', function(){ setTimeout(post, 250); });
+    vid.addEventListener('playing', reset);
+  }catch(e){ console.warn('post-video', e); }
+})();
+</script>
 </body>
 </html>
